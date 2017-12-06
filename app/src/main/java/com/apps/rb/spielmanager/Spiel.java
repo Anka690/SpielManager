@@ -6,51 +6,61 @@ package com.apps.rb.spielmanager;
 
 public class Spiel {
 
-    private int _id;
+    public Spiel(long id, String title){
+        _id =id;
+        _title = title;
+    }
+    private long _id;
     private String _title;
     private int[] _ratings;
     private int _minNumPlayers;
     private int _maxNumPlayers;
 
-    public int get_id() {
+    public long getId() {
         return _id;
     }
 
-    public void set_id(int _id) {
+    public void setId(long _id) {
         this._id = _id;
     }
 
-    public String get_title() {
+    public String getTitle() {
         return _title;
     }
 
-    public void set_title(String _title) {
+    public void setTitle(String _title) {
         this._title = _title;
     }
 
-    public int[] get_ratings() {
+    public int[] getRatings() {
         return _ratings;
     }
 
-    public void set_ratings(int[] _ratings) {
+    public void setRatings(int[] _ratings) {
         this._ratings = _ratings;
     }
 
-    public int get_minNumPlayers() {
+    public int getMinNumPlayers() {
         return _minNumPlayers;
     }
 
-    public void set_minNumPlayers(int _minNumPlayers) {
+    public void setMinNumPlayers(int _minNumPlayers) {
         this._minNumPlayers = _minNumPlayers;
     }
 
-    public int get_maxNumPlayers() {
+    public int getMaxNumPlayers() {
         return _maxNumPlayers;
     }
 
-    public void set_maxNumPlayers(int _maxNumPlayers) {
+    public void setMaxNumPlayers(int _maxNumPlayers) {
         this._maxNumPlayers = _maxNumPlayers;
     }
 
-
+    @Override
+    public String toString() {
+        return "Spiel{" +
+                "_id=" + _id +
+                ", _title='" + _title + '\'' +
+                '}';
+    }
 }
