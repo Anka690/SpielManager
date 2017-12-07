@@ -2,10 +2,28 @@
     <string name="app_name">SpielManager</string>
     <string name="action_settings">Settings</string>
 
+    <string name="title">Titel</string>
+    <string name="spieleranzahl">Spieleranzahl</string>
+
     <string name="editText_hint_title">Titel</string>
     <string name="editText_hint_minSpieler">min</string>
     <string name="editText_hint_maxSpieler">max</string>
+    <string name="editText_new_title">Neuer Titel</string>
+    <string name="editText_new_minSpieler">Neue Mindestanzahl</string>
+    <string name="editText_new_maxSpieler">Neue Maximalanzahl</string>
+
     <string name="button_add_game">+</string>
 
     <string name="editText_errorMessage">Das Feld darf nicht leer sein.</string>
+
+    <string name="action_delete">Einträge löschen</string>
+    <string name="action_change">Eintrag ändern</string>
+    <string name="cab_checked_string">ausgewählt</string>
+    <string name="action_teile_spieldaten">Share</string>
+
+    <string name="dialog_change_game">Listeneintrag ändern</string>
+
+    <string name="dialog_button_positive">Ok</string>
+    <string name="dialog_button_negative">Abbrechen</string>
+    <string name="dialog_message_delete">Möchten Sie wirklich alle ausgewählten Einträge löschen?</string>
 </resources>

@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.view.inputmethod.InputMethodManager;
 import android.text.TextUtils;
 import android.widget.EditText;
 /**
@@ -33,7 +32,7 @@ public class AddGameActivity extends Activity{
         save.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 //read title
-                EditText editTextTitle = (EditText) findViewById(R.id.editText_newGameTitle);
+                EditText editTextTitle = (EditText) findViewById(R.id.editText_newGame_title);
                 String titleString = editTextTitle.getText().toString();
                 if(TextUtils.isEmpty(titleString)) {
                     editTextTitle.setError(getString(R.string.editText_errorMessage));
@@ -42,7 +41,7 @@ public class AddGameActivity extends Activity{
                 editTextTitle.setText("");
 
                 //read minPlayers
-                EditText editTextMinPlayers = (EditText) findViewById(R.id.editText_newGameMinSpieler);
+                EditText editTextMinPlayers = (EditText) findViewById(R.id.editText_newGame_minSpieler);
                 String minPlayersString = editTextMinPlayers.getText().toString();
                 if(TextUtils.isEmpty(minPlayersString)) {
                     editTextMinPlayers.setError(getString(R.string.editText_errorMessage));
@@ -51,7 +50,7 @@ public class AddGameActivity extends Activity{
                 int minPlayers = Integer.parseInt(minPlayersString);
                 editTextMinPlayers.setText("");
 
-                EditText editTextMaxPlayers = (EditText) findViewById(R.id.editText_newGameMaxSpieler);
+                EditText editTextMaxPlayers = (EditText) findViewById(R.id.editText_newGame_maxSpieler);
                 String maxPlayersString = editTextMaxPlayers.getText().toString();
                 if(TextUtils.isEmpty(maxPlayersString)) {
                     editTextMaxPlayers.setError(getString(R.string.editText_errorMessage));

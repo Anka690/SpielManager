@@ -58,9 +58,10 @@ public class Spiel {
 
     @Override
     public String toString() {
-        return "Spiel{" +
+        return _title + " (Id = " + _id +")";
+               /* "Spiel{" +
                 "_id=" + _id +
                 ", _title='" + _title + '\'' +
-                '}';
+                '}';*/
     }
 }

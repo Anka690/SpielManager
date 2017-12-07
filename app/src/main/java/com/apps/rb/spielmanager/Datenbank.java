@@ -64,6 +64,36 @@ public class Datenbank {
         return game;
     }
 
+    public void deleteGame(Spiel game) {
+        long id = game.getId();
+
+        database.delete(DatenbankHelper.TABLE_SPIELE,
+                DatenbankHelper.COLUMN_ID + "=" + id,
+                null);
+
+        Log.d(LOG_TAG, "Eintrag gelöscht! ID: " + id + " Inhalt: " + game.toString());
+    }
+
+    public Spiel updateGame(long id, String newTitle) {
+        ContentValues values = new ContentValues();
+        values.put(DatenbankHelper.COLUMN_TITLE, newTitle);
+
+        database.update(DatenbankHelper.TABLE_SPIELE,
+                values,
+                DatenbankHelper.COLUMN_ID + "=" + id,
+                null);
+
+        Cursor cursor = database.query(DatenbankHelper.TABLE_SPIELE,
+                columns, DatenbankHelper.COLUMN_ID + "=" + id,
+                null, null, null, null);
+
+        cursor.moveToFirst();
+        Spiel game = cursorToSpiel(cursor);
+        cursor.close();
+
+        return game;
+    }
+
     private Spiel cursorToSpiel(Cursor cursor) {
         int idIndex = cursor.getColumnIndex(DatenbankHelper.COLUMN_ID);
         int idTitle = cursor.getColumnIndex(DatenbankHelper.COLUMN_TITLE);
