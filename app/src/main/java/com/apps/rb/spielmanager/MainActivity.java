@@ -26,7 +26,7 @@ import android.text.TextUtils;
 import android.widget.EditText;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String LOG_TAG = Datenbank.class.getSimpleName();
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private Datenbank _dataSource;
     @Override
