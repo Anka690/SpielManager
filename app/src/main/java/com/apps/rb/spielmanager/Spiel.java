@@ -1,5 +1,7 @@
 package com.apps.rb.spielmanager;
 
+import android.util.Log;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ import java.util.Map;
  */
 
 public class Spiel {
+    private static final String LOG_TAG = Spiel.class.getSimpleName();
 
     public Spiel(long id, String title){
         _id =id;
@@ -84,6 +87,7 @@ public class Spiel {
 
 
     public double getAverageRating() {
+        Log.d(LOG_TAG, "getAverageRating: gestartet für Spiel " + this.getTitle() +"...");
         int numEntries = 0;
         int sumRatings = 0;
         for(  Map.Entry<Spieler, Integer> mapEntry : _mapOfRatings.entrySet()){
@@ -116,7 +120,7 @@ public class Spiel {
         }
     }
 
-    public int getOwnerId(){
+    public long getOwnerId(){
         if( _owner != null ){
             return _owner.getId();
         } else{
@@ -149,7 +153,7 @@ public class Spiel {
             case DatenbankHelper.COLUMN_PLACE:
                 return getPlaceId();
             case DatenbankHelper.COLUMN_OWNER:
-                return getOwnerId();
+                return (int)getOwnerId();
             default:
                 return -1;
         }

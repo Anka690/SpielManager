@@ -31,13 +31,6 @@ public class DatenbankHelper extends SQLiteOpenHelper{
     public static final String COLUMN_PLACE = "Lagerort";
     public static final String COLUMN_COVER = "Cover";
 
-/* TODO: Put in additional DatenbankHelperSpieler-Class
-    public static final String TABLE_SPIELER = "spieler_list";
-    public static final String COLUMN_SPIELER_ID = "_id_spieler";
-    public static final String COLUMN_SPIELER_SHORT_NAME = "_shortName_spieler";
-    public static final String COLUMN_SPIELER_FIRSTNAME = "_firstname_spieler";
-    public static final String COLUMN_SPIELER_SURNAME = "_surname_spieler";*/
-
 
     public static final String SQL_CREATE = "CREATE TABLE " + TABLE_SPIELE +
             "(" + COLUMN_SPIEL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +

@@ -6,24 +6,32 @@ package com.apps.rb.spielmanager;
 
 public class Spieler {
 
-    int _id;
+    long _id;
     String _firstname;
     String _surname;
     String _initials;
 
 
-    public Spieler(int id, String firstname, String surname, String kuerzel){
+    public Spieler(long id, String firstname, String surname, String kuerzel){
         _id =id;
         _firstname = firstname;
         _surname = surname;
         _initials = kuerzel;
     }
 
-    public int getId(){
+    public long getId(){
         return _id;
     }
 
     public String getInitials(){
         return _initials;
+    }
+
+    public String get_firstname() {
+        return _firstname;
+    }
+
+    public String get_surname() {
+        return _surname;
     }
 }

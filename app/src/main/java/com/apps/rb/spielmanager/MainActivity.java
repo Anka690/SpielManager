@@ -1,54 +1,51 @@
 package com.apps.rb.spielmanager;
 
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.view.MotionEvent;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v7.widget.ShareActionProvider;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.view.Gravity;
-import android.util.TypedValue;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.util.Log;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import java.util.List;
+import android.util.TypedValue;
 import android.content.Intent;
-import android.widget.Button;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v7.widget.ShareActionProvider;
-import android.util.SparseBooleanArray;
-import android.view.ActionMode;
-import android.widget.AbsListView;
 import android.content.DialogInterface;
-import android.support.v7.app.AlertDialog;
-import android.view.LayoutInflater;
-import android.text.TextUtils;
-import android.widget.EditText;
-import android.app.ProgressDialog;
-import android.widget.TableLayout;
-import android.widget.LinearLayout;
-import android.widget.TableRow;
-import android.os.AsyncTask;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.EditText;
+import android.widget.TableLayout;
+import android.widget.TableRow;
+import android.text.TextUtils;
+import android.app.ProgressDialog;
 import android.graphics.Color;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private Datenbank _dataSource;
+    private DatenbankSpieler _dataSourceSpieler;
+    private DatenbankRatings _dataSourceRatings;
 
     private static final int ADD_GAME_ACTIVITY_RESULT_CODE = 0;
 
     private TableLayout mTableLayout;
     ProgressDialog mProgressBar;
 
-    private static int _currentGamePositionInList = -1;
+    private static Map<TableRow, Long> _mapTableRowToGameId;
 
     private List<Spiel> gameList;
 
@@ -70,8 +67,10 @@ public class MainActivity extends AppCompatActivity {
         mTableLayout.setStretchAllColumns(true);
 
         _dataSource = new Datenbank(this);
+        _dataSourceSpieler = new DatenbankSpieler(this);
+        _dataSourceRatings = new DatenbankRatings(this);
 
-
+        _mapTableRowToGameId = new HashMap<TableRow, Long>();
         startLoadData();
     }
 
@@ -81,13 +80,13 @@ public class MainActivity extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent myIntent = new Intent(view.getContext(), AddGameActivity.class);
-                //myIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                //myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                /*Bundle bundle = new Bundle();
+                bundle.putString ("title", titleString);
+                myIntent.putExtras(bundle);*/
+
                 startActivityForResult(myIntent, ADD_GAME_ACTIVITY_RESULT_CODE);
             }
         });
-
-
     }
 
     @Override
@@ -157,6 +156,7 @@ public class MainActivity extends AppCompatActivity {
         smallTextSize = (int) getResources().getDimension(R.dimen.font_size_small);
         mediumTextSize = (int) getResources().getDimension(R.dimen.font_size_medium);
 
+        _mapTableRowToGameId.clear();
 
         gameList = _dataSource.getAllSpiele();
 
@@ -173,7 +173,6 @@ public class MainActivity extends AppCompatActivity {
             Spiel row = null;
             if (i > -1) {
                 row = gameList.get(i);
-                _currentGamePositionInList = i;
                 Log.d(LOG_TAG, "Spiel " + String.valueOf(row.getId()) + " mit Titel " + row.getTitle());
                 //row = data[i];
             } else {
@@ -282,54 +281,18 @@ public class MainActivity extends AppCompatActivity {
             tr.addView(tv5);
 
             if (i > -1) {
-/*                tr.setOnTouchListener(new View.OnTouchListener() {
-                    public boolean onTouch(View v, MotionEvent evt)
-                    {
-                        TableRow tr = (TableRow) v;
-                        // to dispatch click / long click event,
-                        // you must pass the event to it's default callback View.onTouchEvent
-                        boolean defaultResult = v.onTouchEvent(evt);
-
-                        switch (evt.getAction())
-                        {
-                            case MotionEvent.ACTION_DOWN:
-                            {
-                                tr.setBackgroundColor(Color.GREEN);
-                                //setSelection(true); // just changing the background
-                                break;
-                            }
-                            case MotionEvent.ACTION_CANCEL:
-                            case MotionEvent.ACTION_UP:
-                            case MotionEvent.ACTION_OUTSIDE:
-                            {
-                                tr.setBackgroundColor(Color.parseColor("#ffffff"));
-                                //setSelection(false); // just changing the background
-                                break;
-                            }
-                            default:
-                                return defaultResult;
-                        }
-
-                        // if you reach here, you have consumed the event
-                        return true;
-                    }
-                });*/
-
-/*                tr.setOnClickListener(new View.OnClickListener() {
-                    public void onClick(View v) {
-                        TableRow tr = (TableRow) v;
-                        //do whatever action is needed
-
-
-                    }
-                });*/
+                _mapTableRowToGameId.put(tr, row.getId());
 
                 tr.setOnLongClickListener(new View.OnLongClickListener() {
                     public boolean onLongClick(View v) {
                         TableRow tr = (TableRow) v;
-                        //do whatever action is needed
-                        //_lastMarkedGame
-                        Spiel game = gameList.get(_currentGamePositionInList);
+                        /*//Attention: First TextView with id is necessary, dangerous
+                        TextView idTextView = (TextView)tr.getChildAt(0);
+                        String idString = idTextView.getText().toString();
+                        Long id = Long.valueOf(idString);*/
+                        Long id = _mapTableRowToGameId.get(tr);
+                        Spiel game = _dataSource.getGameById(id);
+
                         AlertDialog editGameDialog = createEditGameDialog(game);
                         editGameDialog.show();
                         //tr.setBackgroundColor(Color.GREEN); // Color.parseColor("#f0f0f0"));
@@ -634,24 +597,37 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "onResume-Methode der MainActivity wird ausgeführt.");
 
         _dataSource.open();
+        _dataSourceSpieler.open();
+        _dataSourceRatings.open();
 
         Bundle bundle = getIntent().getExtras();
         if(bundle != null) {
             Log.d(LOG_TAG, "Bundle is not null.");
-            String newTitle = bundle.getString("title");
+            String newTitle = bundle.getString("title", "");
             if( newTitle != "") {
                 Spiel game = _dataSource.createSpiel(newTitle);
                 int defaultPlayerNumber = -1;
                 int minPlayers = bundle.getInt("minPlayers", defaultPlayerNumber);
                 if (minPlayers != defaultPlayerNumber) {
                     game.setMinNumPlayers((minPlayers));
-                    //_dataSource.updateGame(game.getId(), DatenbankHelper.COLUMN_MIN_NUM_PLAYERS, minPlayers );
                 }
                 int maxPlayers = bundle.getInt("maxPlayers", defaultPlayerNumber);
                 if (maxPlayers != defaultPlayerNumber) {
                     game.setMaxNumPlayers((maxPlayers));
-                    //_dataSource.updateGame(game.getId(), DatenbankHelper.COLUMN_MAX_NUM_PLAYERS, maxPlayers );
                 }
+
+
+                ArrayList<String> initialList = bundle.getStringArrayList("initials");
+                ArrayList<Integer> ratingList = bundle.getIntegerArrayList("ratings");
+                int numRatings = initialList.size();
+                for( int r = 0; r < numRatings; r++) {
+                    String shortName = initialList.get(r);
+                    Spieler player = _dataSourceSpieler.getPlayerByShortName(shortName);
+                    int rating = ratingList.get(r);
+                    game.addRating(player, rating);
+                    _dataSourceRatings.addRating(player.getId(), game.getId(), rating);
+                }
+
                 _dataSource.updateGame(game);
             }
         } else{
@@ -669,5 +645,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "Die Datenquelle wird geschlossen.");
         _dataSource.close();
+        _dataSourceSpieler.close();
+        _dataSourceRatings.close();
     }
 }

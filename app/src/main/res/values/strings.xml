@@ -4,6 +4,7 @@
 
     <string name="title">Titel</string>
     <string name="spieleranzahl">Spieleranzahl</string>
+    <string name="rating">Rating</string>
 
     <string name="editText_hint_title">Titel</string>
     <string name="editText_hint_minSpieler">min</string>

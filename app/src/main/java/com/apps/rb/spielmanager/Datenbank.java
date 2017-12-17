@@ -20,8 +20,6 @@ public class Datenbank {
     private SQLiteDatabase database;
     private DatenbankHelper dbHelper;
 
-    //Problem: diese Map wird natürlich bei Beendigung des Spielmanagers nicht gespeichert. Daher funktioniert erneuter Start gerade nicht
-    //TODO: retrieve all information by the database (rcreate games once)
     private Map<Long, Spiel> _mapOfGames;
 
     private String[] columns = {
@@ -63,6 +61,10 @@ public class Datenbank {
         _mapOfGames =new HashMap<Long,Spiel>();
 
         dbHelper = new DatenbankHelper(context);
+
+        open();
+        fillMapOfGames();
+        close();
     }
 
     //fill mapOfGames, hoping that this method is only called when the app is started, we create the game-objects here
@@ -110,7 +112,7 @@ public class Datenbank {
     public void open() {
         Log.d(LOG_TAG, "Eine Referenz auf die Datenbank wird jetzt angefragt.");
         database = dbHelper.getWritableDatabase();
-        fillMapOfGames();
+
         Log.d(LOG_TAG, "Datenbank-Referenz erhalten. Pfad zur Datenbank: " + database.getPath());
     }
 
@@ -184,11 +186,7 @@ public class Datenbank {
 
     private Spiel cursorToSpiel(Cursor cursor) {
         int idIndex = cursor.getColumnIndex(DatenbankHelper.COLUMN_SPIEL_ID);
-        int idTitle = cursor.getColumnIndex(DatenbankHelper.COLUMN_TITLE);
-
-        String title = cursor.getString(idTitle);
         long id = cursor.getLong(idIndex);
-
         return getGameById(id);
     }
 
@@ -201,7 +199,6 @@ public class Datenbank {
 
         cursor.moveToFirst();
         Spiel game;
-
         while(!cursor.isAfterLast()) {
             game = cursorToSpiel(cursor);
             if( game == null ){
@@ -211,7 +208,6 @@ public class Datenbank {
             Log.d(LOG_TAG, "ID: " + game.getId() + ", Inhalt: " + game.toString());
             cursor.moveToNext();
         }
-
         cursor.close();
 
         return gameList;
