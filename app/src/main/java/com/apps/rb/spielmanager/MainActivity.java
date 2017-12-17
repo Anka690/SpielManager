@@ -5,7 +5,10 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.Gravity;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.util.Log;
@@ -24,11 +27,31 @@ import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.text.TextUtils;
 import android.widget.EditText;
+import android.app.ProgressDialog;
+import android.widget.TableLayout;
+import android.widget.LinearLayout;
+import android.widget.TableRow;
+import android.os.AsyncTask;
+import android.widget.TextView;
+import android.graphics.Color;
+import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private Datenbank _dataSource;
+
+    private static final int ADD_GAME_ACTIVITY_RESULT_CODE = 0;
+
+    private TableLayout mTableLayout;
+    ProgressDialog mProgressBar;
+
+    private static int _currentGamePositionInList = -1;
+
+    private List<Spiel> gameList;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,37 +59,341 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "onCreate-Methode der MainActivity wird ausgeführt.");
 
-        _dataSource = new Datenbank(this);
-
         activateAddButton();
 
-        initializeContextualActionBar();
-/*        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
+        //initializeContextualActionBar();
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replaced with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
+        mProgressBar = new ProgressDialog(this);
+
+        // setup the table
+        mTableLayout = (TableLayout) findViewById(R.id.tableGames);
+        mTableLayout.setStretchAllColumns(true);
+
+        _dataSource = new Datenbank(this);
+
+
+        startLoadData();
     }
+
 
     private void activateAddButton(){
         Button add = (Button) findViewById(R.id.ButtonAdd);
         add.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent myIntent = new Intent(view.getContext(), AddGameActivity.class);
-                startActivityForResult(myIntent, 0);
+                //myIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                //myIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivityForResult(myIntent, ADD_GAME_ACTIVITY_RESULT_CODE);
             }
         });
+
+
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        Log.d(LOG_TAG, "onNewIntent: gestartet...");
+        setIntent(intent);
+        //now getIntent() should always return the last received intent
+    }
+
+   /* @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Log.d(LOG_TAG, "onActivityResult: gestartet...");
+        // check that it is the SecondActivity with an OK result
+        if (requestCode == ADD_GAME_ACTIVITY_RESULT_CODE) {
+            if (resultCode == RESULT_OK) {
+
+                Log.d(LOG_TAG, "Die Datenquelle wird geöffnet.");
+                _dataSource.open();
+
+                Bundle bundle = getIntent().getExtras();
+                if(bundle != null) {
+                    Log.d(LOG_TAG, "onActivityResult: Bundle is not null.");
+                    String newTitle = bundle.getString("title");
+                    Spiel game = _dataSource.createSpiel(newTitle);
+                    int defaultPlayerNumber = -1;
+                    int minPlayers = bundle.getInt("minPlayers", defaultPlayerNumber);
+                    if (minPlayers != defaultPlayerNumber) {
+                        game.setMinNumPlayers((minPlayers));
+                        //_dataSource.updateGame(game.getId(), DatenbankHelper.COLUMN_MIN_NUM_PLAYERS, minPlayers );
+                    }
+                    int maxPlayers = bundle.getInt("maxPlayers", defaultPlayerNumber);
+                    if (maxPlayers != defaultPlayerNumber) {
+                        game.setMaxNumPlayers((maxPlayers));
+                        //_dataSource.updateGame(game.getId(), DatenbankHelper.COLUMN_MAX_NUM_PLAYERS, maxPlayers );
+                    }
+                    _dataSource.updateGame(game);
+                } else{
+                    Log.d(LOG_TAG, "onActivityResult: Attention: Bundle is null.");
+                }
+
+                Log.d(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
+                startLoadData();
+            }
+        }
+    }*/
+
+
+    public void startLoadData() {
+        mProgressBar.setCancelable(false);
+        mProgressBar.setMessage("Lädt die Spiele...");
+        mProgressBar.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        mProgressBar.show();
+        new LoadDataTask().execute(0);
+    }
+
+    public void loadData() {
+        Log.d(LOG_TAG, "loadData-Methode gestartet.");
+        int leftRowMargin=0;
+        int topRowMargin=0;
+        int rightRowMargin=0;
+        int bottomRowMargin = 0;
+        int textSize = 0, smallTextSize =0, mediumTextSize = 0;
+
+        textSize = (int) getResources().getDimension(R.dimen.font_size_verysmall);
+        smallTextSize = (int) getResources().getDimension(R.dimen.font_size_small);
+        mediumTextSize = (int) getResources().getDimension(R.dimen.font_size_medium);
+
+
+        gameList = _dataSource.getAllSpiele();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+        DecimalFormat decimalFormat = new DecimalFormat("0.0");
+
+        int rows = gameList.size(); //  data.length;
+        getSupportActionBar().setTitle("Spiele (" + String.valueOf(rows) + ")");
+        Log.d(LOG_TAG, "Anzahl Spiele = " + String.valueOf(rows));
+        TextView textSpacer = null;
+        mTableLayout.removeAllViews();
+        // -1 means heading row
+        for(int i = -1; i < rows; i ++) {
+            Spiel row = null;
+            if (i > -1) {
+                row = gameList.get(i);
+                _currentGamePositionInList = i;
+                Log.d(LOG_TAG, "Spiel " + String.valueOf(row.getId()) + " mit Titel " + row.getTitle());
+                //row = data[i];
+            } else {
+                textSpacer = new TextView(this);
+                textSpacer.setText("");
+            }
+
+            // data columns
+            final TextView tv = new TextView(this);
+            tv.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT));
+            tv.setGravity(Gravity.LEFT);
+            tv.setPadding(5, 15, 0, 15);
+            if (i == -1) {
+                tv.setText("Id");
+                tv.setBackgroundColor(Color.parseColor("#f0f0f0"));
+                tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            } else {
+                tv.setBackgroundColor(Color.parseColor("#f8f8f8"));
+                tv.setText(String.valueOf(row.getId()));
+                tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            }
+
+            final TextView tv2 = new TextView(this);
+            if (i == -1) {
+                tv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
+                        TableRow.LayoutParams.WRAP_CONTENT));
+                tv2.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            } else {
+                tv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                        TableRow.LayoutParams.MATCH_PARENT));
+                tv2.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            }
+
+            tv2.setGravity(Gravity.LEFT);
+            tv2.setPadding(5, 15, 0, 15);
+            if (i == -1) {
+                tv2.setText("Name");
+                tv2.setBackgroundColor(Color.parseColor("#f7f7f7"));
+            }else {
+                tv2.setBackgroundColor(Color.parseColor("#ffffff"));
+                tv2.setTextColor(Color.parseColor("#000000"));
+                tv2.setText(row.getTitle());
+                //tv2.setText(dateFormat.format(row.getTitle()));
+            }
+
+
+            final TextView tv3 = new TextView(this);
+            tv3.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT));
+            tv3.setGravity(Gravity.RIGHT);
+            tv3.setPadding(5, 15, 0, 15);
+            if (i == -1) {
+                tv3.setText("Min");
+                tv3.setBackgroundColor(Color.parseColor("#f0f0f0"));
+                tv3.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            } else {
+                tv3.setBackgroundColor(Color.parseColor("#f8f8f8"));
+                tv3.setText(row.getMinNumPlayersString());
+                tv3.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            }
+
+            final TextView tv4 = new TextView(this);
+            tv4.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT));
+            tv4.setGravity(Gravity.RIGHT);
+            tv4.setPadding(5, 15, 0, 15);
+            if (i == -1) {
+                tv4.setText("Max");
+                tv4.setBackgroundColor(Color.parseColor("#f0f0f0"));
+                tv4.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            } else {
+                tv4.setBackgroundColor(Color.parseColor("#f8f8f8"));
+                tv4.setText(row.getMaxNumPlayersString());
+                tv4.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            }
+
+            final TextView tv5 = new TextView(this);
+            tv5.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                    TableRow.LayoutParams.WRAP_CONTENT));
+            tv5.setGravity(Gravity.RIGHT);
+            tv5.setPadding(5, 15, 0, 15);
+            if (i == -1) {
+                tv5.setText("Rating");
+                tv5.setBackgroundColor(Color.parseColor("#f0f0f0"));
+                tv5.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            } else {
+                tv5.setBackgroundColor(Color.parseColor("#f8f8f8"));
+                tv5.setText(String.valueOf(row.getAverageRating()));
+                tv5.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+            }
+
+            // add table row
+            final TableRow tr = new TableRow(this);
+            tr.setId(i + 1);
+            TableLayout.LayoutParams trParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
+                    TableLayout.LayoutParams.WRAP_CONTENT);
+            trParams.setMargins(leftRowMargin, topRowMargin, rightRowMargin, bottomRowMargin);
+            tr.setPadding(0,0,0,0);
+            tr.setLayoutParams(trParams);
+
+            tr.addView(tv);
+            tr.addView(tv2);
+            tr.addView(tv3);
+            tr.addView(tv4);
+            tr.addView(tv5);
+
+            if (i > -1) {
+/*                tr.setOnTouchListener(new View.OnTouchListener() {
+                    public boolean onTouch(View v, MotionEvent evt)
+                    {
+                        TableRow tr = (TableRow) v;
+                        // to dispatch click / long click event,
+                        // you must pass the event to it's default callback View.onTouchEvent
+                        boolean defaultResult = v.onTouchEvent(evt);
+
+                        switch (evt.getAction())
+                        {
+                            case MotionEvent.ACTION_DOWN:
+                            {
+                                tr.setBackgroundColor(Color.GREEN);
+                                //setSelection(true); // just changing the background
+                                break;
+                            }
+                            case MotionEvent.ACTION_CANCEL:
+                            case MotionEvent.ACTION_UP:
+                            case MotionEvent.ACTION_OUTSIDE:
+                            {
+                                tr.setBackgroundColor(Color.parseColor("#ffffff"));
+                                //setSelection(false); // just changing the background
+                                break;
+                            }
+                            default:
+                                return defaultResult;
+                        }
+
+                        // if you reach here, you have consumed the event
+                        return true;
+                    }
+                });*/
+
+/*                tr.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(View v) {
+                        TableRow tr = (TableRow) v;
+                        //do whatever action is needed
+
+
+                    }
+                });*/
+
+                tr.setOnLongClickListener(new View.OnLongClickListener() {
+                    public boolean onLongClick(View v) {
+                        TableRow tr = (TableRow) v;
+                        //do whatever action is needed
+                        //_lastMarkedGame
+                        Spiel game = gameList.get(_currentGamePositionInList);
+                        AlertDialog editGameDialog = createEditGameDialog(game);
+                        editGameDialog.show();
+                        //tr.setBackgroundColor(Color.GREEN); // Color.parseColor("#f0f0f0"));
+                        return true;
+                    }
+                });
+            }
+            mTableLayout.addView(tr, trParams);
+
+            if (i > -1) {
+                // add separator row
+                final TableRow trSep = new TableRow(this);
+                TableLayout.LayoutParams trParamsSep = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
+                        TableLayout.LayoutParams.WRAP_CONTENT);
+                trParamsSep.setMargins(leftRowMargin, topRowMargin, rightRowMargin, bottomRowMargin);
+
+                trSep.setLayoutParams(trParamsSep);
+                TextView tvSep = new TextView(this);
+                TableRow.LayoutParams tvSepLay = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
+                        TableRow.LayoutParams.WRAP_CONTENT);
+                tvSepLay.span = 4;
+                tvSep.setLayoutParams(tvSepLay);
+                tvSep.setBackgroundColor(Color.parseColor("#d9d9d9"));
+                tvSep.setHeight(1);
+
+                trSep.addView(tvSep);
+                mTableLayout.addView(trSep, trParamsSep);
+            }
+        }
+    }
+
+    //////////////////////////////////////////////////////////////////////////////
+    // The params are dummy and not used
+    class LoadDataTask extends AsyncTask<Integer, Integer, String> {
+        @Override
+        protected String doInBackground(Integer... params) {
+            try {
+                Thread.sleep(1000);
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            return "Task Completed.";
+        }
+
+        @Override
+        protected void onPostExecute(String result) {
+            mProgressBar.hide();
+            loadData();
+        }
+
+        @Override
+        protected void onPreExecute() {
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+        }
     }
 
 
     private AlertDialog createEditGameDialog(final Spiel game) {
-
+        Log.d(LOG_TAG, "started editGameDialog...");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
 
@@ -75,27 +402,42 @@ public class MainActivity extends AppCompatActivity {
         final EditText editTextNewTitle = (EditText) dialogsView.findViewById(R.id.editText_new_title);
         editTextNewTitle.setText(String.valueOf(game.getTitle()));
 
+        final EditText editTextNewMinPlayers= (EditText) dialogsView.findViewById(R.id.editText_new_minSpieler);
+        editTextNewMinPlayers.setText(String.valueOf(game.getMinNumPlayers()));
+
+        final EditText editTextNewMaxPlayers= (EditText) dialogsView.findViewById(R.id.editText_new_maxSpieler);
+        editTextNewMaxPlayers.setText(String.valueOf(game.getMaxNumPlayers()));
+
         builder.setView(dialogsView)
                 .setTitle(R.string.dialog_change_game)
                 .setPositiveButton(R.string.dialog_button_positive, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         String titleString = editTextNewTitle.getText().toString();
-
                         if ((TextUtils.isEmpty(titleString)) ) {
                             Log.d(LOG_TAG, "Ein Eintrag enthielt keinen Text. Daher Abbruch der Änderung.");
                             return;
                         }
+                        game.setTitle(titleString);
 
-                        //int quantity = Integer.parseInt(quantityString);
+                        String minPlayersString = editTextNewMinPlayers.getText().toString();
+                        int minPlayers = Integer.parseInt(minPlayersString);
+                        game.setMinNumPlayers(minPlayers);
+
+                        String maxPlayersString = editTextNewMaxPlayers.getText().toString();
+                        int maxPlayers = Integer.parseInt(maxPlayersString);
+                        game.setMaxNumPlayers(maxPlayers);
 
                         // An dieser Stelle schreiben wir die geänderten Daten in die SQLite Datenbank
-                        Spiel updatedGame = _dataSource.updateGame(game.getId(), titleString);
+                        _dataSource.updateGame(game);
 
-                        Log.d(LOG_TAG, "Alter Eintrag - ID: " + game.getId() + " Inhalt: " + game.toString());
-                        Log.d(LOG_TAG, "Neuer Eintrag - ID: " + updatedGame.getId() + " Inhalt: " + updatedGame.toString());
+                        //Spiel updatedGame = _dataSource.updateGame(game.getId(), titleString);
 
-                        showAllListEntries();
+/*                        Log.d(LOG_TAG, "Alter Eintrag - ID: " + game.getId() + " Inhalt: " + game.toString());
+                        Log.d(LOG_TAG, "Neuer Eintrag - ID: " + updatedGame.getId() + " Inhalt: " + updatedGame.toString());*/
+
+                        startLoadData();
+                        //showAllListEntries();
                         dialog.dismiss();
                     }
                 })
@@ -108,8 +450,7 @@ public class MainActivity extends AppCompatActivity {
         return builder.create();
     }
 
-    private void initializeContextualActionBar() {
-
+   /* private void initializeContextualActionBar() {
         final ListView gamesListView = (ListView) findViewById(R.id.listview_games);
         gamesListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
 
@@ -226,9 +567,9 @@ public class MainActivity extends AppCompatActivity {
                 selCount = 0;
             }
         });
-    }
+    }*/
 
-    private void showAllListEntries () {
+/*    private void showAllListEntries () {
         List<Spiel> gameList = _dataSource.getAllSpiele();
 
         ArrayAdapter<Spiel> gameArrayAdapter = new ArrayAdapter<> (
@@ -238,7 +579,7 @@ public class MainActivity extends AppCompatActivity {
 
         ListView gamesListView = (ListView) findViewById(R.id.listview_games);
         gamesListView.setAdapter(gameArrayAdapter);
-    }
+    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -292,17 +633,34 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "onResume-Methode der MainActivity wird ausgeführt.");
 
-        Log.d(LOG_TAG, "Die Datenquelle wird geöffnet.");
         _dataSource.open();
 
         Bundle bundle = getIntent().getExtras();
         if(bundle != null) {
+            Log.d(LOG_TAG, "Bundle is not null.");
             String newTitle = bundle.getString("title");
-            _dataSource.createSpiel(newTitle);
+            if( newTitle != "") {
+                Spiel game = _dataSource.createSpiel(newTitle);
+                int defaultPlayerNumber = -1;
+                int minPlayers = bundle.getInt("minPlayers", defaultPlayerNumber);
+                if (minPlayers != defaultPlayerNumber) {
+                    game.setMinNumPlayers((minPlayers));
+                    //_dataSource.updateGame(game.getId(), DatenbankHelper.COLUMN_MIN_NUM_PLAYERS, minPlayers );
+                }
+                int maxPlayers = bundle.getInt("maxPlayers", defaultPlayerNumber);
+                if (maxPlayers != defaultPlayerNumber) {
+                    game.setMaxNumPlayers((maxPlayers));
+                    //_dataSource.updateGame(game.getId(), DatenbankHelper.COLUMN_MAX_NUM_PLAYERS, maxPlayers );
+                }
+                _dataSource.updateGame(game);
+            }
+        } else{
+            Log.d(LOG_TAG, "onResume: Bundle is null.");
         }
 
         Log.d(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
-        showAllListEntries();
+        startLoadData();
+        //showAllListEntries();
     }
 
     @Override

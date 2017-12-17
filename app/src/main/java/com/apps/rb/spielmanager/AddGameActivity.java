@@ -43,11 +43,13 @@ public class AddGameActivity extends Activity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_game);
 
+        Log.d(LOG_TAG, "create AddGameActivity...");
         createTakePictureButton();
 
         createCancelButton();
 
         createSaveButton();
+        Log.d(LOG_TAG, "AddGameActivity successfully created.");
     }
 
     private void checkPermissionsAndTakePhoto() {
@@ -123,19 +125,19 @@ public class AddGameActivity extends Activity{
                 //read minPlayers
                 EditText editTextMinPlayers = (EditText) findViewById(R.id.editText_newGame_minSpieler);
                 String minPlayersString = editTextMinPlayers.getText().toString();
-                if(TextUtils.isEmpty(minPlayersString)) {
+               /* if(TextUtils.isEmpty(minPlayersString)) {
                     editTextMinPlayers.setError(getString(R.string.editText_errorMessage));
                     return;
-                }
+                }*/
                 int minPlayers = Integer.parseInt(minPlayersString);
                 editTextMinPlayers.setText("");
 
                 EditText editTextMaxPlayers = (EditText) findViewById(R.id.editText_newGame_maxSpieler);
                 String maxPlayersString = editTextMaxPlayers.getText().toString();
-                if(TextUtils.isEmpty(maxPlayersString)) {
+               /* if(TextUtils.isEmpty(maxPlayersString)) {
                     editTextMaxPlayers.setError(getString(R.string.editText_errorMessage));
                     return;
-                }
+                }*/
                 int maxPlayers = Integer.parseInt(maxPlayersString);
                 editTextMaxPlayers.setText("");
 
@@ -143,12 +145,19 @@ public class AddGameActivity extends Activity{
 
                 Bundle bundle = new Bundle();
                 bundle.putString("title", titleString); //Your id
+                bundle.putInt("minPlayers", minPlayers); //Your id
+                bundle.putInt("maxPlayers", maxPlayers); //Your id
                 intent.putExtras(bundle); //Put your id to your next Intent
-
+                Log.d(LOG_TAG, "Bundle filled.");
+                //intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                Log.d(LOG_TAG, "Flags set.");
                 //Intent intent = new Intent();
                 setResult(RESULT_OK, intent);
                 finish();
+                Log.d(LOG_TAG, "Finished.");
                 startActivity(intent);
+                Log.d(LOG_TAG, "startActivity with intent.");
             }
         });
     }

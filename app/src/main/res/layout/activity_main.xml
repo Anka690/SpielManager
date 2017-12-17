@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -8,21 +8,48 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:id="@+id/games_layout">
+    <!--tools:context="table.test.com.dynamictable.MainActivity">-->
 
-    <LinearLayout
+    <ScrollView
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"       >
+
+        <TableLayout
+            android:id="@+id/tableGames"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="0dp"
+            android:stretchColumns="*">
+        </TableLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/ButtonAdd"
+        android:layout_width="80dp"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_marginBottom="10dp"
+        android:layout_marginRight="15dp"
+        android:text="@string/button_add_game"
+        android:textSize="20sp"></Button>
+
+
+<!--    <LinearLayout
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:focusableInTouchMode="true"
         android:orientation="horizontal">
 
-        <!--        <EditText
+        &lt;!&ndash;        <EditText
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="@string/editText_hint_quantity"
             android:inputType="number"
             android:id="@+id/editText_quantity"
-            android:layout_weight="1" />-->
+            android:layout_weight="1" />&ndash;&gt;
         <TextView
             android:id="@+id/columnHeader_title"
             android:layout_width="wrap_content"
@@ -30,12 +57,12 @@
             android:layout_weight="2"
             android:text="@string/editText_hint_title"
             />
-       <!-- <EditText
+       &lt;!&ndash; <EditText
             android:id="@+id/editText_game"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="4"
-            android:hint="@string/editText_hint_title" />-->
+            android:hint="@string/editText_hint_title" />&ndash;&gt;
 
     </LinearLayout>
 
@@ -53,8 +80,9 @@
         android:layout_gravity="bottom|end"
         android:layout_weight="1"
         android:text="@string/button_add_game"
-        android:textSize="20sp"></Button>
-</LinearLayout>
+        android:textSize="20sp"></Button>-->
+
+</RelativeLayout>
 
 
 <!--<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"

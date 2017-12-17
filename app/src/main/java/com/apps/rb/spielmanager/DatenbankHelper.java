@@ -19,7 +19,7 @@ public class DatenbankHelper extends SQLiteOpenHelper{
 
     public static final String TABLE_SPIELE = "spiele_list";
 
-    public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_SPIEL_ID = "_id";
     public static final String COLUMN_TITLE = "titel";
     public static final String COLUMN_MIN_NUM_PLAYERS = "minSpieler";
     public static final String COLUMN_MAX_NUM_PLAYERS = "maxSpieler";
@@ -27,12 +27,20 @@ public class DatenbankHelper extends SQLiteOpenHelper{
     public static final String COLUMN_YEAR = "Jahr";
     public static final String COLUMN_DURATION = "Dauer";
     public static final String COLUMN_FIRST_PLAY_DATE = "ErstSpielDatum";
+    public static final String COLUMN_OWNER = "Owner";
     public static final String COLUMN_PLACE = "Lagerort";
     public static final String COLUMN_COVER = "Cover";
 
+/* TODO: Put in additional DatenbankHelperSpieler-Class
+    public static final String TABLE_SPIELER = "spieler_list";
+    public static final String COLUMN_SPIELER_ID = "_id_spieler";
+    public static final String COLUMN_SPIELER_SHORT_NAME = "_shortName_spieler";
+    public static final String COLUMN_SPIELER_FIRSTNAME = "_firstname_spieler";
+    public static final String COLUMN_SPIELER_SURNAME = "_surname_spieler";*/
+
 
     public static final String SQL_CREATE = "CREATE TABLE " + TABLE_SPIELE +
-            "(" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            "(" + COLUMN_SPIEL_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             COLUMN_TITLE + " TEXT NOT NULL, " +
             COLUMN_MIN_NUM_PLAYERS + " INTEGER, " +
             COLUMN_MAX_NUM_PLAYERS + " INTEGER, " +
@@ -41,7 +49,8 @@ public class DatenbankHelper extends SQLiteOpenHelper{
             COLUMN_DURATION + " INTEGER, " +
             COLUMN_COVER + " TEXT, " +
             COLUMN_FIRST_PLAY_DATE + " TEXT, " +
-            COLUMN_PLACE + " TEXT );";
+            COLUMN_OWNER + " INTEGER, " +
+            COLUMN_PLACE + " INTEGER );";
 
     public DatenbankHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
