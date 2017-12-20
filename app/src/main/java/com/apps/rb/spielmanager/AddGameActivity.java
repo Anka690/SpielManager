@@ -89,6 +89,10 @@ public class AddGameActivity extends Activity{
         list.add("TR");
         list.add("MM");
         list.add("SZ");
+        list.add("JR");
+        list.add("PR");
+        list.add("NR");
+        list.add("CS");
         list.add("");
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, list);
@@ -165,9 +169,15 @@ public class AddGameActivity extends Activity{
 
             //coolere Alternative with path
             Bitmap testPhoto = BitmapFactory.decodeFile(resultingFile.getPath());
+            testPhoto = Tools.scaleBitmapToViewSize(testPhoto, dpToPx(200));
             Log.d(LOG_TAG, "Photo successfully set from path!");
             takePictureButton.setImageBitmap(testPhoto);
         }
+    }
+
+    private int dpToPx(int dp) {
+        float density = getApplicationContext().getResources().getDisplayMetrics().density;
+        return Math.round((float)dp * density);
     }
 
     private void checkPermissionsAndTakePhoto() {

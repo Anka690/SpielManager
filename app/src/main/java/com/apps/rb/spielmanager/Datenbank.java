@@ -197,16 +197,19 @@ public class Datenbank {
         Cursor cursor = database.query(DatenbankHelper.TABLE_SPIELE,
                 columns, null, null, null, null, null);
 
-        cursor.moveToFirst();
-        Spiel game;
-        while(!cursor.isAfterLast()) {
-            game = cursorToSpiel(cursor);
-            if( game == null ){
-                Log.d(LOG_TAG, "getAllSpiele: game is null");
+        if( cursor.moveToFirst()) {
+            Spiel game;
+            while (!cursor.isAfterLast()) {
+                game = cursorToSpiel(cursor);
+                if (game == null) {
+                    Log.d(LOG_TAG, "getAllSpiele: game is null");
+                }
+                gameList.add(game);
+                Log.d(LOG_TAG, "ID: " + game.getId() + ", Inhalt: " + game.toString());
+                cursor.moveToNext();
             }
-            gameList.add(game);
-            Log.d(LOG_TAG, "ID: " + game.getId() + ", Inhalt: " + game.toString());
-            cursor.moveToNext();
+        } else{
+            Log.d(LOG_TAG, "getAllSpiele: no games found");
         }
         cursor.close();
 

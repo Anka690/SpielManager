@@ -63,24 +63,35 @@ public class DatenbankRatings {
     }
 
     public Map<Long, Integer> getAllRatings(Spiel game) {
-        Log.d(LOG_TAG, "getAllRatings to Spiel " + game.getTitle() + ": gestartet...");
+        Log.d(LOG_TAG, "getAllRatings to Spiel " + game.getTitle() + " mit Id " + game.getId() + ": gestartet...");
         Map<Long, Integer> mapRatings = new HashMap<Long, Integer>();
         String whereClause = DatenbankRatingsHelper.COLUMN_SPIEL_ID + " = ?" ;
-        String[] whereArgs = new String[] {
-                String.valueOf(game.getId())
-        };
-        String orderBy = DatenbankRatingsHelper.COLUMN_SPIELER_ID;
-        Cursor cursor = databaseRatings.query(DatenbankRatingsHelper.TABLE_RATINGS,
-                columns, whereClause, whereArgs, null, null, orderBy);
+        String[] whereArgs = new String[] { String.valueOf(game.getId()) };
 
-        cursor.moveToFirst();
-        while(!cursor.isAfterLast()) {
-            Pair<Long, Integer> ratingEntry = cursorToRatingEntry(cursor);
-            mapRatings.put(ratingEntry.first, ratingEntry.second);
-            Log.d(LOG_TAG, "Spieler-ID: " + ratingEntry.first + ", Rating: " + ratingEntry.second);
-            cursor.moveToNext();
-        }
-        cursor.close();
+        Log.d(LOG_TAG, "getAllRatings: reached here 0...");
+        //String orderBy = DatenbankRatingsHelper.COLUMN_SPIELER_ID;
+       /* databaseRatings.execSQL("SELECT * FROM " + DatenbankRatingsHelper.TABLE_RATINGS +
+                        " WHERE " + DatenbankRatingsHelper.COLUMN_SPIEL_ID + " = " + game.getId() );*/
+       try {
+           Cursor cursor = databaseRatings.query(DatenbankRatingsHelper.TABLE_RATINGS,
+                   columns, whereClause, whereArgs, null, null, null);
+           Log.d(LOG_TAG, "getAllRatings: reached here...");
+           if (cursor.getCount() > 0) {
+               cursor.moveToFirst();
+               Log.d(LOG_TAG, "getAllRatings: reached here II...");
+               while (!cursor.isAfterLast()) {
+                   Pair<Long, Integer> ratingEntry = cursorToRatingEntry(cursor);
+                   mapRatings.put(ratingEntry.first, ratingEntry.second);
+                   Log.d(LOG_TAG, "Spieler-ID: " + ratingEntry.first + ", Rating: " + ratingEntry.second);
+                   cursor.moveToNext();
+               }
+           }
+           Log.d(LOG_TAG, "getAllRatings: reached here III...");
+           cursor.close();
+       } catch (Exception e){
+           Log.d(LOG_TAG,  e.getMessage());
+           throw new RuntimeException("Exception in getAllRatings");
+       }
         Log.d(LOG_TAG, "getAllRatings to Spiel " + game.getTitle() + ": found " + mapRatings.size() + " ratings.");
         return mapRatings;
     }

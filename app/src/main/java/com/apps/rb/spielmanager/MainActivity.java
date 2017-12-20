@@ -70,8 +70,27 @@ public class MainActivity extends AppCompatActivity {
         _dataSourceSpieler = new DatenbankSpieler(this);
         _dataSourceRatings = new DatenbankRatings(this);
 
+        //at the start, fill the ratings in the Spiel-objects
+        restoreRatingsInGames();
+
+
         _mapTableRowToGameId = new HashMap<TableRow, Long>();
         startLoadData();
+    }
+
+    private void restoreRatingsInGames(){
+        _dataSource.open();
+        _dataSourceRatings.open();
+        _dataSourceSpieler.open();
+        for(Spiel game : _dataSource.getAllSpiele()) {
+            Map<Long, Integer> mapOfRatings = _dataSourceRatings.getAllRatings(game);
+            for (Map.Entry<Long, Integer> rating : mapOfRatings.entrySet()) {
+                game.addRating(_dataSourceSpieler.getPlayerById(rating.getKey()), rating.getValue());
+            }
+        }
+        _dataSource.close();
+        _dataSourceRatings.close();
+        _dataSourceSpieler.close();
     }
 
 

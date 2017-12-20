@@ -62,6 +62,18 @@ public class DatenbankSpieler {
         if( getPlayerByShortName("SZ") == null) {
             createSpieler("SZ", "Svenja", "Zielke");
         }
+        if( getPlayerByShortName("JR") == null) {
+            createSpieler("JR", "Janet", "Rothenbächer");
+        }
+        if( getPlayerByShortName("PR") == null) {
+            createSpieler("PR", "Paul", "Rothenbächer");
+        }
+        if( getPlayerByShortName("NR") == null) {
+            createSpieler("NR", "Nicole", "Rothenbächer");
+        }
+        if( getPlayerByShortName("CS") == null) {
+            createSpieler("CS", "Cass", "Serna");
+        }
         close();
     }
 
@@ -135,12 +147,14 @@ public class DatenbankSpieler {
 
         Cursor cursor = databaseSpieler.query(DatenbankSpielerHelper.TABLE_SPIELER,
                 columns, whereClause, whereArgs, null, null, null);
-        if( cursor == null){
-            Log.d(LOG_TAG, "getPlayerByShortName: cursor is null");
+
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return cursorToSpieler(cursor);
+        } else{
+            Log.d(LOG_TAG, "getPlayerByShortName: no entry found");
             return null;
         }
-        cursor.moveToFirst();
-        return cursorToSpieler(cursor);
     }
 
     public Spieler createSpieler(String initials, String firstname, String lastname) {

@@ -5,4 +5,6 @@
     <dimen name="font_size_verysmall">10sp</dimen>
     <dimen name="font_size_small">12sp</dimen>
     <dimen name="font_size_medium">20sp</dimen>
+
+    <dimen name="cover_size">200dp</dimen>
 </resources>

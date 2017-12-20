@@ -26,7 +26,7 @@ public class DatenbankRatingsHelper extends SQLiteOpenHelper {
             "(" + COLUMN_SPIEL_ID + " INTEGER NOT NULL, " +
             COLUMN_SPIELER_ID + " INTEGER NOT NULL, " +
             COLUMN_RATING + " INTEGER, " +
-            "PRIMARY KEY ( " + COLUMN_SPIEL_ID + ", " + COLUMN_SPIELER_ID + " );";
+            "PRIMARY KEY ( " + COLUMN_SPIEL_ID + ", " + COLUMN_SPIELER_ID + " ));";
 
     public DatenbankRatingsHelper(Context context) {
         super(context, DB_NAME, null, DB_VERSION);
