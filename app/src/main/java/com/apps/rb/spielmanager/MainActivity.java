@@ -16,6 +16,7 @@ import android.util.TypedValue;
 import android.content.Intent;
 import android.content.DialogInterface;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.EditText;
 import android.widget.TableLayout;
@@ -32,6 +33,10 @@ import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 
+//TODO: Cover-Foto speichern und anzeigen
+//TODO: Filter-Möglichkeit hinzufügen
+//TODO: Spieler hinzufügbar machen
+//TODO: Layouts schön machen
 
 public class MainActivity extends AppCompatActivity {
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -187,102 +192,70 @@ public class MainActivity extends AppCompatActivity {
         Log.d(LOG_TAG, "Anzahl Spiele = " + String.valueOf(rows));
         TextView textSpacer = null;
         mTableLayout.removeAllViews();
-        // -1 means heading row
-        for(int i = -1; i < rows; i ++) {
-            Spiel row = null;
-            if (i > -1) {
-                row = gameList.get(i);
-                Log.d(LOG_TAG, "Spiel " + String.valueOf(row.getId()) + " mit Titel " + row.getTitle());
-                //row = data[i];
-            } else {
-                textSpacer = new TextView(this);
-                textSpacer.setText("");
-            }
 
-            // data columns
-            final TextView tv = new TextView(this);
+        createHeaders();
+
+        // iterate over all games
+        for(int i = 0; i < rows; i ++) {
+            Spiel row = gameList.get(i);
+            Log.d(LOG_TAG, "Spiel " + String.valueOf(row.getId()) + " mit Titel " + row.getTitle());
+
+/*            final TextView tv = new TextView(this);
             tv.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                     TableRow.LayoutParams.WRAP_CONTENT));
             tv.setGravity(Gravity.LEFT);
             tv.setPadding(5, 15, 0, 15);
-            if (i == -1) {
-                tv.setText("Id");
-                tv.setBackgroundColor(Color.parseColor("#f0f0f0"));
-                tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            } else {
-                tv.setBackgroundColor(Color.parseColor("#f8f8f8"));
-                tv.setText(String.valueOf(row.getId()));
-                tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            }
+            tv.setBackgroundColor(Color.parseColor("#f8f8f8"));
+            tv.setText(String.valueOf(row.getId()));
+            tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);*/
 
             final TextView tv2 = new TextView(this);
-            if (i == -1) {
-                tv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
-                        TableRow.LayoutParams.WRAP_CONTENT));
-                tv2.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            } else {
-                tv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+            tv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                         TableRow.LayoutParams.MATCH_PARENT));
-                tv2.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            }
-
+            tv2.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
             tv2.setGravity(Gravity.LEFT);
             tv2.setPadding(5, 15, 0, 15);
-            if (i == -1) {
-                tv2.setText("Name");
-                tv2.setBackgroundColor(Color.parseColor("#f7f7f7"));
-            }else {
-                tv2.setBackgroundColor(Color.parseColor("#ffffff"));
-                tv2.setTextColor(Color.parseColor("#000000"));
-                tv2.setText(row.getTitle());
+            tv2.setBackgroundColor(Color.parseColor("#ffffff"));
+            tv2.setTextColor(Color.parseColor("#000000"));
+            tv2.setText(row.getTitle());
                 //tv2.setText(dateFormat.format(row.getTitle()));
-            }
 
+            final ImageView iv2 = new ImageView(this);
+            iv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                        TableRow.LayoutParams.MATCH_PARENT));
+            iv2.setPadding(5, 15, 0, 15);
+            //iv2.setBackgroundColor(Color.parseColor("#ffffff"));
+            String coverString = row.getCoverString();
+            if( !coverString.equals("")) {
+                iv2.setImageBitmap(Tools.StringToBitMap(row.getCoverString()));
+            }
 
             final TextView tv3 = new TextView(this);
             tv3.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                     TableRow.LayoutParams.WRAP_CONTENT));
             tv3.setGravity(Gravity.RIGHT);
             tv3.setPadding(5, 15, 0, 15);
-            if (i == -1) {
-                tv3.setText("Min");
-                tv3.setBackgroundColor(Color.parseColor("#f0f0f0"));
-                tv3.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            } else {
-                tv3.setBackgroundColor(Color.parseColor("#f8f8f8"));
-                tv3.setText(row.getMinNumPlayersString());
-                tv3.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            }
+            tv3.setBackgroundColor(Color.parseColor("#f8f8f8"));
+            tv3.setText(row.getMinNumPlayersString());
+            tv3.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
 
             final TextView tv4 = new TextView(this);
             tv4.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                     TableRow.LayoutParams.WRAP_CONTENT));
             tv4.setGravity(Gravity.RIGHT);
             tv4.setPadding(5, 15, 0, 15);
-            if (i == -1) {
-                tv4.setText("Max");
-                tv4.setBackgroundColor(Color.parseColor("#f0f0f0"));
-                tv4.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            } else {
-                tv4.setBackgroundColor(Color.parseColor("#f8f8f8"));
-                tv4.setText(row.getMaxNumPlayersString());
-                tv4.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            }
+            tv4.setBackgroundColor(Color.parseColor("#f8f8f8"));
+            tv4.setText(row.getMaxNumPlayersString());
+            tv4.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
 
             final TextView tv5 = new TextView(this);
             tv5.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                     TableRow.LayoutParams.WRAP_CONTENT));
             tv5.setGravity(Gravity.RIGHT);
             tv5.setPadding(5, 15, 0, 15);
-            if (i == -1) {
-                tv5.setText("Rating");
-                tv5.setBackgroundColor(Color.parseColor("#f0f0f0"));
-                tv5.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            } else {
-                tv5.setBackgroundColor(Color.parseColor("#f8f8f8"));
-                tv5.setText(String.valueOf(row.getAverageRating()));
-                tv5.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
-            }
+            tv5.setBackgroundColor(Color.parseColor("#f8f8f8"));
+            tv5.setText(row.getAverageRatingToString());
+            tv5.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
 
             // add table row
             final TableRow tr = new TableRow(this);
@@ -293,61 +266,137 @@ public class MainActivity extends AppCompatActivity {
             tr.setPadding(0,0,0,0);
             tr.setLayoutParams(trParams);
 
-            tr.addView(tv);
+            //tr.addView(tv);
             tr.addView(tv2);
+            tr.addView(iv2);
             tr.addView(tv3);
             tr.addView(tv4);
             tr.addView(tv5);
 
-            if (i > -1) {
-                _mapTableRowToGameId.put(tr, row.getId());
+            _mapTableRowToGameId.put(tr, row.getId());
 
-                tr.setOnLongClickListener(new View.OnLongClickListener() {
-                    public boolean onLongClick(View v) {
-                        TableRow tr = (TableRow) v;
+            tr.setOnLongClickListener(new View.OnLongClickListener() {
+                public boolean onLongClick(View v) {
+                    TableRow tr = (TableRow) v;
                         /*//Attention: First TextView with id is necessary, dangerous
                         TextView idTextView = (TextView)tr.getChildAt(0);
                         String idString = idTextView.getText().toString();
                         Long id = Long.valueOf(idString);*/
-                        Long id = _mapTableRowToGameId.get(tr);
-                        Spiel game = _dataSource.getGameById(id);
+                    Long id = _mapTableRowToGameId.get(tr);
+                    Spiel game = _dataSource.getGameById(id);
 
-                        Intent myIntent = new Intent(v.getContext(), AddGameActivity.class);
-                        Bundle bundle = new Bundle();
-                        bundle.putLong ("SpielId", game.getId());
-                        myIntent.putExtras(bundle);
+                    Intent myIntent = new Intent(v.getContext(), AddGameActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putLong("SpielId", game.getId());
+                    myIntent.putExtras(bundle);
 
-                        startActivityForResult(myIntent, ADD_GAME_ACTIVITY_RESULT_CODE);
+                    startActivityForResult(myIntent, ADD_GAME_ACTIVITY_RESULT_CODE);
 
 /*                        AlertDialog editGameDialog = createEditGameDialog(game);
                         editGameDialog.show();*/
-
-                        return true;
-                    }
-                });
-            }
+                    return true;
+                }
+            });
             mTableLayout.addView(tr, trParams);
 
-            if (i > -1) {
-                // add separator row
-                final TableRow trSep = new TableRow(this);
-                TableLayout.LayoutParams trParamsSep = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
+            // add separator row
+            final TableRow trSep = new TableRow(this);
+            TableLayout.LayoutParams trParamsSep = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
                         TableLayout.LayoutParams.WRAP_CONTENT);
-                trParamsSep.setMargins(leftRowMargin, topRowMargin, rightRowMargin, bottomRowMargin);
+            trParamsSep.setMargins(leftRowMargin, topRowMargin, rightRowMargin, bottomRowMargin);
 
-                trSep.setLayoutParams(trParamsSep);
-                TextView tvSep = new TextView(this);
-                TableRow.LayoutParams tvSepLay = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
+            trSep.setLayoutParams(trParamsSep);
+            TextView tvSep = new TextView(this);
+            TableRow.LayoutParams tvSepLay = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
                         TableRow.LayoutParams.WRAP_CONTENT);
-                tvSepLay.span = 4;
-                tvSep.setLayoutParams(tvSepLay);
-                tvSep.setBackgroundColor(Color.parseColor("#d9d9d9"));
-                tvSep.setHeight(1);
+            tvSepLay.span = 4;
+            tvSep.setLayoutParams(tvSepLay);
+            tvSep.setBackgroundColor(Color.parseColor("#d9d9d9"));
+            tvSep.setHeight(1);
 
-                trSep.addView(tvSep);
-                mTableLayout.addView(trSep, trParamsSep);
-            }
+            trSep.addView(tvSep);
+            mTableLayout.addView(trSep, trParamsSep);
         }
+    }
+
+    private void createHeaders(){
+        int smallTextSize = (int) getResources().getDimension(R.dimen.font_size_small);
+
+        /*final TextView tv = new TextView(this);
+        tv.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        tv.setGravity(Gravity.LEFT);
+        tv.setPadding(5, 15, 0, 15);
+        tv.setText("Id");
+        tv.setBackgroundColor(Color.parseColor("#f0f0f0"));
+        tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);*/
+
+        final TextView tv2 = new TextView(this);
+        tv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
+                    TableRow.LayoutParams.WRAP_CONTENT));
+        tv2.setGravity(Gravity.LEFT);
+        tv2.setPadding(5, 15, 0, 15);
+        tv2.setText("Name");
+        tv2.setBackgroundColor(Color.parseColor("#f7f7f7"));
+        tv2.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+
+        final TextView tvCover = new TextView(this);
+        tvCover.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        tvCover.setGravity(Gravity.CENTER);
+        tvCover.setPadding(5, 15, 0, 15);
+        tvCover.setText("Cover");
+        tvCover.setBackgroundColor(Color.parseColor("#f7f7f7"));
+        tvCover.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+
+        final TextView tv3 = new TextView(this);
+        tv3.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        tv3.setGravity(Gravity.RIGHT);
+        tv3.setPadding(5, 15, 0, 15);
+        tv3.setText("Min");
+        tv3.setBackgroundColor(Color.parseColor("#f0f0f0"));
+        tv3.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+
+        final TextView tv4 = new TextView(this);
+        tv4.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        tv4.setGravity(Gravity.RIGHT);
+        tv4.setPadding(5, 15, 0, 15);
+        tv4.setText("Max");
+        tv4.setBackgroundColor(Color.parseColor("#f0f0f0"));
+        tv4.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+
+        final TextView tv5 = new TextView(this);
+        tv5.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        tv5.setGravity(Gravity.RIGHT);
+        tv5.setPadding(5, 15, 0, 15);
+        tv5.setText("Rating");
+        tv5.setBackgroundColor(Color.parseColor("#f0f0f0"));
+        tv5.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+
+        // add table row
+        int leftRowMargin=0;
+        int topRowMargin=0;
+        int rightRowMargin=0;
+        int bottomRowMargin = 0;
+        final TableRow tr = new TableRow(this);
+        tr.setId(0);
+        TableLayout.LayoutParams trParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
+                TableLayout.LayoutParams.WRAP_CONTENT);
+        trParams.setMargins(leftRowMargin, topRowMargin, rightRowMargin, bottomRowMargin);
+        tr.setPadding(0,0,0,0);
+        tr.setLayoutParams(trParams);
+
+        //tr.addView(tv);
+        tr.addView(tv2);
+        tr.addView(tvCover);
+        tr.addView(tv3);
+        tr.addView(tv4);
+        tr.addView(tv5);
+
+        mTableLayout.addView(tr, trParams);
     }
 
     //////////////////////////////////////////////////////////////////////////////
@@ -643,6 +692,8 @@ public class MainActivity extends AppCompatActivity {
                 if (maxPlayers != defaultPlayerNumber) {
                     game.setMaxNumPlayers((maxPlayers));
                 }
+                String coverString = bundle.getString("cover", "");
+                game.setCoverString(coverString);
 
                 //Set all ratings for this game
                 ArrayList<String> initialList = bundle.getStringArrayList("initials");

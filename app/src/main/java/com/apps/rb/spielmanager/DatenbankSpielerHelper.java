@@ -14,7 +14,7 @@ public class DatenbankSpielerHelper extends SQLiteOpenHelper {
     private static final String LOG_TAG = DatenbankSpielerHelper.class.getSimpleName();
 
     public static final String DB_NAME = "spieler_list.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
 
     public static final String TABLE_SPIELER = "spieler_list";
 
@@ -39,6 +39,7 @@ public class DatenbankSpielerHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         try {
             Log.d(LOG_TAG, "Die Tabelle wird mit SQL-Befehl: " + SQL_CREATE + " angelegt.");
+            // Attention: deletes the whole database: db.execSQL("DROP TABLE IF EXISTS " + TABLE_SPIELER);
             db.execSQL(SQL_CREATE);
         }
         catch (Exception ex) {
@@ -48,6 +49,13 @@ public class DatenbankSpielerHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        try {
+            Log.d(LOG_TAG, "onUpgrade: Die Tabelle wird gelöscht und mit SQL-Befehl: " + SQL_CREATE + " neu angelegt.");
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_SPIELER);
+            db.execSQL(SQL_CREATE);
+        }
+        catch (Exception ex) {
+            Log.e(LOG_TAG, "Fehler beim Anlegen der Tabelle: " + ex.getMessage());
+        }
     }
 }

@@ -40,8 +40,10 @@ public class AddGameActivity extends Activity{
 
     private final int CancelId = 0;
     private final int SaveId = 1;
+    private final String emptyString = "";
 
     File resultingFile;//File of taken picture
+    String stringOfPicture = "";
 
     private ImageButton takePictureButton;
     private Button addRatingButton;
@@ -67,13 +69,14 @@ public class AddGameActivity extends Activity{
         _dataSourceSpieler = new DatenbankSpieler(this);
         _dataSourceRatings = new DatenbankRatings(this);
 
+        ratingsTable = findViewById(R.id.table_ratings);
+
+        takePictureButton = (ImageButton) findViewById(R.id.button_take_picture);
         createTakePictureButton();
 
         createCancelButton();
 
         createSaveButton();
-
-        ratingsTable = findViewById(R.id.table_ratings);
 
         Bundle bundle = getIntent().getExtras();
         if(bundle != null) {
@@ -93,6 +96,11 @@ public class AddGameActivity extends Activity{
 
                 EditText editTextMaxPlayers = (EditText) findViewById(R.id.editText_newGame_maxSpieler);
                 editTextMaxPlayers.setText(game.getMaxNumPlayersString());
+
+                stringOfPicture = game.getCoverString();
+                if( !stringOfPicture.equals(emptyString) ) {
+                    takePictureButton.setImageBitmap(Tools.StringToBitMap(game.getCoverString()));
+                }
 
                 loadRatings(game);
             }
@@ -116,7 +124,6 @@ public class AddGameActivity extends Activity{
 
     private void addTableRow(){
         Log.d(LOG_TAG, "addTableRow: gestartet...");
-
         int smallTextSize = (int) getResources().getDimension(R.dimen.font_size_small);
 
         final Spinner spinnerSpieler = new Spinner(this);
@@ -133,15 +140,7 @@ public class AddGameActivity extends Activity{
             list.add(player.getShortName());
         }
         _dataSourceSpieler.close();
-       /* list.add("AR");
-        list.add("TR");
-        list.add("MM");
-        list.add("SZ");
-        list.add("JR");
-        list.add("PR");
-        list.add("NR");
-        list.add("CS");*/
-        list.add("");
+        list.add(emptyString);
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, list);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -153,7 +152,7 @@ public class AddGameActivity extends Activity{
         etRating.setGravity(Gravity.LEFT);
         etRating.setPadding(5, 15, 0, 15);
 
-        etRating.setText("10");
+        etRating.setText( getResources().getString(R.string.rating_default) ); //"10");
         etRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
 
         Log.d(LOG_TAG, "addTableRow: TextView and EditText created.");
@@ -165,7 +164,6 @@ public class AddGameActivity extends Activity{
         tr.setPadding(0,0,0,0);
         tr.setLayoutParams(trParams);
 
-        //tr.addView(tvSpieler);
         tr.addView(spinnerSpieler);
         tr.addView(etRating);
 
@@ -238,7 +236,6 @@ public class AddGameActivity extends Activity{
     }
 
     private void createTakePictureButton(){
-        takePictureButton = (ImageButton) findViewById(R.id.button_take_picture);
         takePictureButton.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view){
@@ -248,7 +245,7 @@ public class AddGameActivity extends Activity{
     }
 
     private void takePicture(){
-        File folder = new File(Environment.getExternalStorageDirectory().toString()+"/ImagesFolder/");
+       /* File folder = new File(Environment.getExternalStorageDirectory().toString()+"/ImagesFolder/");
         folder.mkdirs();
         resultingFile = new File(folder, "image.jpg"); //TODO: decide name of picture
         Uri uriSavedImage = FileProvider.getUriForFile(AddGameActivity.this,
@@ -256,23 +253,24 @@ public class AddGameActivity extends Activity{
         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         cameraIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         cameraIntent.putExtra(android.provider.MediaStore.EXTRA_OUTPUT, uriSavedImage);
-        startActivityForResult(cameraIntent, CAMERA_REQUEST);
-
-/*      Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
         startActivityForResult(cameraIntent, CAMERA_REQUEST);*/
+
+        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(cameraIntent, CAMERA_REQUEST);
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
-          /*  //If we do not putExtra on the cameraIntent, the following code works:
+            //If we do not putExtra on the cameraIntent, the following code works:
             Bitmap photo = (Bitmap) data.getExtras().get("data");
-            takePictureButton.setImageBitmap(photo);*/
+            takePictureButton.setImageBitmap(photo);
+            stringOfPicture = Tools.BitMapToString(photo);
 
-            //coolere Alternative with path
+/*            //coolere Alternative with path
             Bitmap testPhoto = BitmapFactory.decodeFile(resultingFile.getPath());
             testPhoto = Tools.scaleBitmapToViewSize(testPhoto, dpToPx(200));
             Log.d(LOG_TAG, "Photo successfully set from path!");
-            takePictureButton.setImageBitmap(testPhoto);
+            takePictureButton.setImageBitmap(testPhoto);*/
         }
     }
 
@@ -331,18 +329,24 @@ public class AddGameActivity extends Activity{
                     editTextTitle.setError(getString(R.string.editText_errorMessage));
                     return;
                 }
-                editTextTitle.setText("");
+                editTextTitle.setText(emptyString);
 
                 //read minPlayers
                 EditText editTextMinPlayers = (EditText) findViewById(R.id.editText_newGame_minSpieler);
                 String minPlayersString = editTextMinPlayers.getText().toString();
-                int minPlayers = Integer.parseInt(minPlayersString);
-                editTextMinPlayers.setText("");
+                int minPlayers = -1;
+                if( !minPlayersString.equals(emptyString)){
+                    minPlayers = Integer.parseInt(minPlayersString);
+                }
+                editTextMinPlayers.setText(emptyString);
                 //read maxPlayers
                 EditText editTextMaxPlayers = (EditText) findViewById(R.id.editText_newGame_maxSpieler);
                 String maxPlayersString = editTextMaxPlayers.getText().toString();
-                int maxPlayers = Integer.parseInt(maxPlayersString);
-                editTextMaxPlayers.setText("");
+                int maxPlayers = -1;
+                if( !maxPlayersString.equals(emptyString)){
+                    maxPlayers = Integer.parseInt(maxPlayersString);
+                }
+                editTextMaxPlayers.setText(emptyString);
 
                 Intent intent = new Intent(AddGameActivity.this, MainActivity.class);
 
@@ -352,9 +356,16 @@ public class AddGameActivity extends Activity{
                 bundle.putInt("minPlayers", minPlayers);
                 bundle.putInt("maxPlayers", maxPlayers);
 
+                if( ! stringOfPicture.equals(emptyString)) {
+                    bundle.putString("cover", stringOfPicture);
+                    Log.d(LOG_TAG, "createSaveButton: stringOfPicture stored in bundle.");
+                }
+
                 ArrayList<String> listOfInitials = new ArrayList<String>();
                 ArrayList<Integer> listOfRatings = new ArrayList<Integer>();
                 //extract ratings
+                _dataSourceSpieler.open();
+                _dataSourceRatings.open();
                 for(int i = 0, j = ratingsTable.getChildCount(); i < j; i++) {
                     View currentView = ratingsTable.getChildAt(i);
                     if (currentView instanceof TableRow) {
@@ -365,13 +376,13 @@ public class AddGameActivity extends Activity{
 
                         Spinner playerSpinner = (Spinner) row.getChildAt(0);
                         String playerInitials = playerSpinner.getSelectedItem().toString();
-
-                        listOfInitials.add(playerInitials);
-                        listOfRatings.add(rating);
+                        if( !playerInitials.equals(emptyString) ) {
+                            listOfInitials.add(playerInitials);
+                            listOfRatings.add(rating);
+                        }
                         Log.d(LOG_TAG, "Rating: " + playerInitials + " rated " + String.valueOf(rating));
                     }
                 }
-
                 bundle.putStringArrayList("initials", listOfInitials);
                 bundle.putIntegerArrayList("ratings", listOfRatings);
 
@@ -379,6 +390,7 @@ public class AddGameActivity extends Activity{
                 Log.d(LOG_TAG, "ActionId set to " + SaveId);
 
                 intent.putExtras(bundle);
+
                 //intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 setResult(RESULT_OK, intent);

@@ -99,6 +99,9 @@ public class Datenbank {
             int maxPlayers = cursor.getInt(cursor.getColumnIndex(DatenbankHelper.COLUMN_MAX_NUM_PLAYERS));
             game.setMaxNumPlayers(maxPlayers);
 
+            String coverString = cursor.getString(cursor.getColumnIndex(DatenbankHelper.COLUMN_COVER));
+            game.setCoverString(coverString);
+
             _mapOfGames.put(game.getId(), game);
 
             Log.d(LOG_TAG, "ID: " + game.getId() + ", Inhalt: " + game.toString());

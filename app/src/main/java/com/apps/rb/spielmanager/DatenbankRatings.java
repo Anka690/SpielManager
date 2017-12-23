@@ -73,25 +73,21 @@ public class DatenbankRatings {
         String whereClause = DatenbankRatingsHelper.COLUMN_SPIEL_ID + " = ?" ;
         String[] whereArgs = new String[] { String.valueOf(game.getId()) };
 
-        Log.d(LOG_TAG, "getAllRatings: reached here 0...");
         //String orderBy = DatenbankRatingsHelper.COLUMN_SPIELER_ID;
        /* databaseRatings.execSQL("SELECT * FROM " + DatenbankRatingsHelper.TABLE_RATINGS +
                         " WHERE " + DatenbankRatingsHelper.COLUMN_SPIEL_ID + " = " + game.getId() );*/
        try {
            Cursor cursor = databaseRatings.query(DatenbankRatingsHelper.TABLE_RATINGS,
                    columns, whereClause, whereArgs, null, null, null);
-           Log.d(LOG_TAG, "getAllRatings: reached here...");
            if (cursor.getCount() > 0) {
                cursor.moveToFirst();
-               Log.d(LOG_TAG, "getAllRatings: reached here II...");
                while (!cursor.isAfterLast()) {
                    Pair<Long, Integer> ratingEntry = cursorToRatingEntry(cursor);
                    mapRatings.put(ratingEntry.first, ratingEntry.second);
-                   Log.d(LOG_TAG, "Spieler-ID: " + ratingEntry.first + ", Rating: " + ratingEntry.second);
+                   Log.d(LOG_TAG, "Spieler-Id: " + ratingEntry.first + ", Rating: " + ratingEntry.second);
                    cursor.moveToNext();
                }
            }
-           Log.d(LOG_TAG, "getAllRatings: reached here III...");
            cursor.close();
        } catch (Exception e){
            Log.d(LOG_TAG,  e.getMessage());
@@ -107,8 +103,7 @@ public class DatenbankRatings {
         int ratingIndex = cursor.getColumnIndex(DatenbankRatingsHelper.COLUMN_RATING);
         int rating = cursor.getInt(ratingIndex);
 
-        Pair<Long, Integer> ratingEntry = new Pair<Long, Integer>(spielerId, rating);
-        return ratingEntry;
+        return new Pair<Long, Integer>(spielerId, rating);
     }
 
 }

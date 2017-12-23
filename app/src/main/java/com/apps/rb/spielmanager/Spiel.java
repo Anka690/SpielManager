@@ -88,7 +88,7 @@ public class Spiel {
 
 
     public double getAverageRating() {
-        Log.d(LOG_TAG, "getAverageRating: gestartet für Spiel " + this.getTitle() +"...");
+        //Log.d(LOG_TAG, "getAverageRating: gestartet für Spiel " + this.getTitle() +"...");
         int numEntries = 0;
         int sumRatings = 0;
         for(  Map.Entry<Spieler, Integer> mapEntry : _mapOfRatings.entrySet()){
@@ -101,12 +101,25 @@ public class Spiel {
         return sumRatings/(double)numEntries;
     }
 
+    public String getAverageRatingToString() {
+        double average = getAverageRating();
+        if( average == 0.0 ){
+            return "";
+        } else{
+            return String.valueOf(average);
+        }
+    }
+
     public int getDuration(){
         return _duration;
     }
 
     public int getYear(){
         return _year;
+    }
+
+    public void setCoverString(String cover) {
+        this._cover = cover;
     }
 
     public String getCoverString(){

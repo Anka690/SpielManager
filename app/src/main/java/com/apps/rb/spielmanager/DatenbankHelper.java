@@ -15,7 +15,7 @@ public class DatenbankHelper extends SQLiteOpenHelper{
 
 
     public static final String DB_NAME = "spiele_list.db";
-    public static final int DB_VERSION = 1;
+    public static final int DB_VERSION = 2;
 
     public static final String TABLE_SPIELE = "spiele_list";
 
@@ -66,6 +66,13 @@ public class DatenbankHelper extends SQLiteOpenHelper{
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+        try {
+            Log.d(LOG_TAG, "onUpgrade: Die Tabelle wird gelöscht und mit SQL-Befehl: " + SQL_CREATE + " neu angelegt.");
+            db.execSQL("DROP TABLE IF EXISTS " + TABLE_SPIELE);
+            db.execSQL(SQL_CREATE);
+        }
+        catch (Exception ex) {
+            Log.e(LOG_TAG, "Fehler beim Anlegen der Tabelle: " + ex.getMessage());
+        }
     }
 }
