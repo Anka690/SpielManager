@@ -6,7 +6,6 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -29,6 +28,7 @@ import android.text.TextUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by Anka on 06.12.2017.
@@ -38,11 +38,20 @@ public class AddGameActivity extends Activity{
     private static final String LOG_TAG = AddGameActivity.class.getSimpleName();
     private static final int CAMERA_REQUEST = 1888;
 
+    private final int CancelId = 0;
+    private final int SaveId = 1;
+
     File resultingFile;//File of taken picture
 
     private ImageButton takePictureButton;
     private Button addRatingButton;
     private TableLayout ratingsTable;
+
+    private Datenbank _dataSource;
+    private DatenbankSpieler _dataSourceSpieler;
+    private DatenbankRatings _dataSourceRatings;
+
+    long currentGameId;
 
     MainActivity main;
 
@@ -53,6 +62,11 @@ public class AddGameActivity extends Activity{
         setContentView(R.layout.add_game);
 
         Log.d(LOG_TAG, "create AddGameActivity...");
+
+        _dataSource = new Datenbank(this);
+        _dataSourceSpieler = new DatenbankSpieler(this);
+        _dataSourceRatings = new DatenbankRatings(this);
+
         createTakePictureButton();
 
         createCancelButton();
@@ -60,16 +74,44 @@ public class AddGameActivity extends Activity{
         createSaveButton();
 
         ratingsTable = findViewById(R.id.table_ratings);
-        createAddRatingButton();
 
-        loadRatings();
+        Bundle bundle = getIntent().getExtras();
+        if(bundle != null) {
+            Log.d(LOG_TAG, "Bundle is not null.");
+            Long spielId = bundle.getLong("SpielId", -1);
+            _dataSource.open();
+            if (spielId != -1) {
+                Spiel game = _dataSource.getGameById(spielId);
+                Log.d(LOG_TAG, "AddGameActivity mit Spiel " + game.getTitle() + " geöffnet.");
+                currentGameId = game.getId();
+                //Fill TextFields with stored values
+                EditText editTextTitle = (EditText) findViewById(R.id.editText_newGame_title);
+                editTextTitle.setText(game.getTitle());
+
+                EditText editTextMinPlayers = (EditText) findViewById(R.id.editText_newGame_minSpieler);
+                editTextMinPlayers.setText(game.getMinNumPlayersString());
+
+                EditText editTextMaxPlayers = (EditText) findViewById(R.id.editText_newGame_maxSpieler);
+                editTextMaxPlayers.setText(game.getMaxNumPlayersString());
+
+                loadRatings(game);
+            }
+            _dataSource.close();
+        } else{
+            currentGameId = -1;
+        }
+
+        createAddRatingButton();
 
         Log.d(LOG_TAG, "AddGameActivity successfully created.");
     }
 
-    private void loadRatings(){
-        //TODO: Use this activity also for editing, not only for creating
-        //At the moment, there are no ratings to load
+    private void loadRatings(Spiel game){
+        _dataSourceRatings.open();
+        for( Map.Entry<Long,Integer> ratingEntry : _dataSourceRatings.getAllRatings(game).entrySet() ){
+            addExistingTableRow(ratingEntry.getKey(), ratingEntry.getValue());
+        }
+        _dataSourceRatings.close();
     }
 
     private void addTableRow(){
@@ -85,14 +127,20 @@ public class AddGameActivity extends Activity{
         spinnerSpieler.setPadding(5, 15, 0, 15);
 
         List<String> list = new ArrayList<String>();
-        list.add("AR");
+        _dataSourceSpieler.open();
+        List<Spieler> players = _dataSourceSpieler.getAllSpieler();
+        for(Spieler player : players){
+            list.add(player.getShortName());
+        }
+        _dataSourceSpieler.close();
+       /* list.add("AR");
         list.add("TR");
         list.add("MM");
         list.add("SZ");
         list.add("JR");
         list.add("PR");
         list.add("NR");
-        list.add("CS");
+        list.add("CS");*/
         list.add("");
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
                 android.R.layout.simple_spinner_item, list);
@@ -120,10 +168,63 @@ public class AddGameActivity extends Activity{
         //tr.addView(tvSpieler);
         tr.addView(spinnerSpieler);
         tr.addView(etRating);
-        Log.d(LOG_TAG, "addTableRow: TableRow created.");
 
         ratingsTable.addView(tr, trParams);
         Log.d(LOG_TAG, "addTableRow: TableRow added.");
+    }
+
+    private void addExistingTableRow(long spielerId, int rating){
+        Log.d(LOG_TAG, "addExistingTableRow: gestartet...");
+
+        int smallTextSize = (int) getResources().getDimension(R.dimen.font_size_small);
+
+        final Spinner spinnerSpieler = new Spinner(this);
+        //spinnerSpieler.setId()
+        spinnerSpieler.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        spinnerSpieler.setGravity(Gravity.LEFT);
+        spinnerSpieler.setPadding(5, 15, 0, 15);
+
+        _dataSourceSpieler.open();
+        Spieler playerOfRating = _dataSourceSpieler.getPlayerById(spielerId);
+        List<String> list = new ArrayList<String>();
+        List<Spieler> players = _dataSourceSpieler.getAllSpieler();
+        for(Spieler p : players){
+            list.add(p.getShortName());
+        }
+        _dataSourceSpieler.close();
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_item, list);
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerSpieler.setAdapter(dataAdapter);
+        int spinnerPosition = dataAdapter.getPosition(playerOfRating.getShortName());
+        if( spinnerPosition != -1 ) {
+            spinnerSpieler.setSelection(spinnerPosition);
+        }
+
+        final EditText etRating = new EditText(this);
+        etRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        etRating.setGravity(Gravity.LEFT);
+        etRating.setPadding(5, 15, 0, 15);
+        etRating.setText(String.valueOf(rating));
+        etRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+
+        Log.d(LOG_TAG, "addExistingTableRow: TextView and EditText created.");
+        final TableRow tr = new TableRow(this);
+        //tr.setId(i + 1);
+        TableLayout.LayoutParams trParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
+                TableLayout.LayoutParams.WRAP_CONTENT);
+        trParams.setMargins(0, 0, 0, 0);
+        tr.setPadding(0,0,0,0);
+        tr.setLayoutParams(trParams);
+
+        //tr.addView(tvSpieler);
+        tr.addView(spinnerSpieler);
+        tr.addView(etRating);
+
+        ratingsTable.addView(tr, trParams);
+        Log.d(LOG_TAG, "addExistingTableRow: TableRow added.");
     }
 
     private void createAddRatingButton(){
@@ -206,9 +307,14 @@ public class AddGameActivity extends Activity{
         cancel.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Log.d(LOG_TAG, "cancelButton clicked.");
-                Intent intent = new Intent();
+                Intent intent = new Intent(AddGameActivity.this, MainActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putInt("ActionId", CancelId);
+                Log.d(LOG_TAG, "ActionId set to " + CancelId);
+                intent.putExtras(bundle);
                 setResult(RESULT_OK, intent);
                 finish();
+                startActivity(intent);
             }
         });
     }
@@ -218,6 +324,7 @@ public class AddGameActivity extends Activity{
         save.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 //read title
+                Log.d(LOG_TAG, "saveButton clicked.");
                 EditText editTextTitle = (EditText) findViewById(R.id.editText_newGame_title);
                 String titleString = editTextTitle.getText().toString();
                 if(TextUtils.isEmpty(titleString)) {
@@ -240,6 +347,7 @@ public class AddGameActivity extends Activity{
                 Intent intent = new Intent(AddGameActivity.this, MainActivity.class);
 
                 Bundle bundle = new Bundle();
+                bundle.putLong("SpielId", currentGameId);
                 bundle.putString("title", titleString);
                 bundle.putInt("minPlayers", minPlayers);
                 bundle.putInt("maxPlayers", maxPlayers);
@@ -267,14 +375,15 @@ public class AddGameActivity extends Activity{
                 bundle.putStringArrayList("initials", listOfInitials);
                 bundle.putIntegerArrayList("ratings", listOfRatings);
 
+                bundle.putInt("ActionId", SaveId);
+                Log.d(LOG_TAG, "ActionId set to " + SaveId);
+
                 intent.putExtras(bundle);
                 //intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 setResult(RESULT_OK, intent);
                 finish();
-                Log.d(LOG_TAG, "Finished.");
                 startActivity(intent);
-                Log.d(LOG_TAG, "startActivity with intent.");
             }
         });
     }

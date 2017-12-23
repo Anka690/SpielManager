@@ -59,7 +59,12 @@ public class DatenbankRatings {
         values.put(DatenbankRatingsHelper.COLUMN_SPIEL_ID, spielId);
         values.put(DatenbankRatingsHelper.COLUMN_RATING, rating);
 
-        databaseRatings.insert(DatenbankRatingsHelper.TABLE_RATINGS, null, values);
+        databaseRatings.execSQL("INSERT OR REPLACE INTO " + DatenbankRatingsHelper.TABLE_RATINGS +
+            "(" + DatenbankRatingsHelper.COLUMN_SPIELER_ID + ", " + DatenbankRatingsHelper.COLUMN_SPIEL_ID + ", " + DatenbankRatingsHelper.COLUMN_RATING + ")" +
+            " VALUES (" + spielerId + ", " + spielId + ", " + rating + ")");
+/*        INSERT OR REPLACE INTO Employee (id, name, role)
+        VALUES (1, 'John Foo', 'CEO');*/
+        //databaseRatings.insert(DatenbankRatingsHelper.TABLE_RATINGS, null, values);
     }
 
     public Map<Long, Integer> getAllRatings(Spiel game) {

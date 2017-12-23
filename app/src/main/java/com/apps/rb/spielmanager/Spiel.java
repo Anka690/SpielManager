@@ -50,6 +50,7 @@ public class Spiel {
     }
 
     public void addRating(Spieler player, int rating) {
+        //adds a new rating or overwrites the rating given by this player
         _mapOfRatings.put(player, rating);
     }
 

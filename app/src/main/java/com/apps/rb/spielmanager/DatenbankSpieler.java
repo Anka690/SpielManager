@@ -50,8 +50,10 @@ public class DatenbankSpieler {
         open();
         fillMapOfPlayers();
 
+        Spieler player;
         if( getPlayerByShortName("AR") == null) {
-            createSpieler("AR", "Anka", "Rothenbächer");
+            player = createSpieler("AR", "Anka", "Rothenbächer");
+            Log.d(LOG_TAG, "Folgender Spieler wurde kreiert: " + player.toString());
         }
         if( getPlayerByShortName("TR") == null) {
             createSpieler("TR", "Thomas", "Rothenbächer");
@@ -106,7 +108,7 @@ public class DatenbankSpieler {
             int idLastname = cursor.getColumnIndex(DatenbankSpielerHelper.COLUMN_SPIELER_SURNAME);
             String lastname = cursor.getString(idLastname);
 
-            player = new Spieler(id, initials, firstname, lastname);
+            player = new Spieler(id, firstname, lastname, initials);
 
             _mapOfPlayers.put(player.getId(), player);
 
@@ -157,10 +159,10 @@ public class DatenbankSpieler {
         }
     }
 
-    public Spieler createSpieler(String initials, String firstname, String lastname) {
+    public Spieler createSpieler(String shortName, String firstname, String lastname) {
         Log.d(LOG_TAG, "createSpieler: gestartet...");
         ContentValues values = new ContentValues();
-        values.put(DatenbankSpielerHelper.COLUMN_SPIELER_SHORT_NAME, initials);
+        values.put(DatenbankSpielerHelper.COLUMN_SPIELER_SHORT_NAME, shortName);
         values.put(DatenbankSpielerHelper.COLUMN_SPIELER_FIRSTNAME, firstname);
         values.put(DatenbankSpielerHelper.COLUMN_SPIELER_SURNAME, lastname);
 
@@ -169,10 +171,10 @@ public class DatenbankSpieler {
         }
         long insertId = databaseSpieler.insert(DatenbankSpielerHelper.TABLE_SPIELER, null, values);
         if( insertId > 0) {
-            Spieler player = new Spieler(insertId, firstname, lastname, initials);
+            Spieler player = new Spieler(insertId, firstname, lastname, shortName);
             _mapOfPlayers.put(insertId, player);
 
-            Log.d(LOG_TAG, "createSpieler: Spieler " + initials + " mit Id " + insertId + " erfolgreich hinzugefügt.");
+            Log.d(LOG_TAG, "createSpieler: Spieler " + shortName + " mit Id " + insertId + " erfolgreich hinzugefügt.");
             return player;
         } else{
             return null;
@@ -194,7 +196,7 @@ public class DatenbankSpieler {
                 Log.d(LOG_TAG, "getAllSpieler: player is null");
             }
             playerList.add(player);
-            Log.d(LOG_TAG, "Spieler-ID: " + player.getId() + ", Inhalt: " + player.getInitials());
+            Log.d(LOG_TAG, "Spieler-ID: " + player.getId() + ", Inhalt: " + player.getShortName());
             cursor.moveToNext();
         }
         cursor.close();

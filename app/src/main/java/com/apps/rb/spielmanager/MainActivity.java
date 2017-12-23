@@ -80,8 +80,8 @@ public class MainActivity extends AppCompatActivity {
 
     private void restoreRatingsInGames(){
         _dataSource.open();
-        _dataSourceRatings.open();
         _dataSourceSpieler.open();
+        _dataSourceRatings.open();
         for(Spiel game : _dataSource.getAllSpiele()) {
             Map<Long, Integer> mapOfRatings = _dataSourceRatings.getAllRatings(game);
             for (Map.Entry<Long, Integer> rating : mapOfRatings.entrySet()) {
@@ -89,8 +89,8 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         _dataSource.close();
-        _dataSourceRatings.close();
         _dataSourceSpieler.close();
+        _dataSourceRatings.close();
     }
 
 
@@ -312,9 +312,16 @@ public class MainActivity extends AppCompatActivity {
                         Long id = _mapTableRowToGameId.get(tr);
                         Spiel game = _dataSource.getGameById(id);
 
-                        AlertDialog editGameDialog = createEditGameDialog(game);
-                        editGameDialog.show();
-                        //tr.setBackgroundColor(Color.GREEN); // Color.parseColor("#f0f0f0"));
+                        Intent myIntent = new Intent(v.getContext(), AddGameActivity.class);
+                        Bundle bundle = new Bundle();
+                        bundle.putLong ("SpielId", game.getId());
+                        myIntent.putExtras(bundle);
+
+                        startActivityForResult(myIntent, ADD_GAME_ACTIVITY_RESULT_CODE);
+
+/*                        AlertDialog editGameDialog = createEditGameDialog(game);
+                        editGameDialog.show();*/
+
                         return true;
                     }
                 });
@@ -551,17 +558,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }*/
 
-/*    private void showAllListEntries () {
-        List<Spiel> gameList = _dataSource.getAllSpiele();
-
-        ArrayAdapter<Spiel> gameArrayAdapter = new ArrayAdapter<> (
-                this,
-                android.R.layout.simple_list_item_multiple_choice,
-                gameList);
-
-        ListView gamesListView = (ListView) findViewById(R.id.listview_games);
-        gamesListView.setAdapter(gameArrayAdapter);
-    }*/
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -622,9 +618,22 @@ public class MainActivity extends AppCompatActivity {
         Bundle bundle = getIntent().getExtras();
         if(bundle != null) {
             Log.d(LOG_TAG, "Bundle is not null.");
-            String newTitle = bundle.getString("title", "");
-            if( newTitle != "") {
-                Spiel game = _dataSource.createSpiel(newTitle);
+            int actionId = bundle.getInt("ActionId");
+            Log.d(LOG_TAG, "ActionId is " + actionId);
+            if( actionId == 1 ) {
+                Log.d(LOG_TAG, "Save-Action will be performed...");
+                Spiel game;
+                long gameId = bundle.getLong("SpielId");
+                if (gameId != -1) {
+                    //Existing game was modified
+                    game = _dataSource.getGameById(gameId);
+                } else {
+                    //New game shall be created
+                    String newTitle = bundle.getString("title", "");
+                    game = _dataSource.createSpiel(newTitle);
+                }
+
+                //Set min and max number of players
                 int defaultPlayerNumber = -1;
                 int minPlayers = bundle.getInt("minPlayers", defaultPlayerNumber);
                 if (minPlayers != defaultPlayerNumber) {
@@ -635,11 +644,11 @@ public class MainActivity extends AppCompatActivity {
                     game.setMaxNumPlayers((maxPlayers));
                 }
 
-
+                //Set all ratings for this game
                 ArrayList<String> initialList = bundle.getStringArrayList("initials");
                 ArrayList<Integer> ratingList = bundle.getIntegerArrayList("ratings");
                 int numRatings = initialList.size();
-                for( int r = 0; r < numRatings; r++) {
+                for (int r = 0; r < numRatings; r++) {
                     String shortName = initialList.get(r);
                     Spieler player = _dataSourceSpieler.getPlayerByShortName(shortName);
                     int rating = ratingList.get(r);
@@ -655,7 +664,6 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
         startLoadData();
-        //showAllListEntries();
     }
 
     @Override
