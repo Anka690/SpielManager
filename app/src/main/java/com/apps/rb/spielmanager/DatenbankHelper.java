@@ -67,9 +67,10 @@ public class DatenbankHelper extends SQLiteOpenHelper{
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         try {
-            Log.d(LOG_TAG, "onUpgrade: Die Tabelle wird gelöscht und mit SQL-Befehl: " + SQL_CREATE + " neu angelegt.");
+            Log.d(LOG_TAG, "onUpgrade called, but nothing is implemented.");
+           /* Log.d(LOG_TAG, "onUpgrade: Die Tabelle wird gelöscht und mit SQL-Befehl: " + SQL_CREATE + " neu angelegt.");
             db.execSQL("DROP TABLE IF EXISTS " + TABLE_SPIELE);
-            db.execSQL(SQL_CREATE);
+            db.execSQL(SQL_CREATE);*/
         }
         catch (Exception ex) {
             Log.e(LOG_TAG, "Fehler beim Anlegen der Tabelle: " + ex.getMessage());

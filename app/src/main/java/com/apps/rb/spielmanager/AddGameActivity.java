@@ -146,16 +146,34 @@ public class AddGameActivity extends Activity{
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSpieler.setAdapter(dataAdapter);
 
-        final EditText etRating = new EditText(this);
+
+        final Spinner spinnerRating = new Spinner(this);
+        spinnerRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        spinnerRating.setGravity(Gravity.CENTER);
+        spinnerRating.setPadding(5, 15, 0, 15);
+
+        List<Integer> ratingList = new ArrayList<Integer>();
+        for(int i = 1; i <= 10; i++){
+            ratingList.add(i);
+        }
+        ArrayAdapter<Integer> dataAdapterRating = new ArrayAdapter<Integer>(this,
+                android.R.layout.simple_spinner_item, ratingList);
+        dataAdapterRating.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerRating.setAdapter(dataAdapterRating);
+
+
+       /* final EditText etRating = new EditText(this);
         etRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                 TableRow.LayoutParams.WRAP_CONTENT));
         etRating.setGravity(Gravity.LEFT);
         etRating.setPadding(5, 15, 0, 15);
 
         etRating.setText( getResources().getString(R.string.rating_default) ); //"10");
-        etRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+        etRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);*/
 
-        Log.d(LOG_TAG, "addTableRow: TextView and EditText created.");
+        Log.d(LOG_TAG, "addTableRow: both spinners created.");
+
         final TableRow tr = new TableRow(this);
         //tr.setId(i + 1);
         TableLayout.LayoutParams trParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
@@ -165,7 +183,8 @@ public class AddGameActivity extends Activity{
         tr.setLayoutParams(trParams);
 
         tr.addView(spinnerSpieler);
-        tr.addView(etRating);
+        //tr.addView(etRating);
+        tr.addView(spinnerRating);
 
         ratingsTable.addView(tr, trParams);
         Log.d(LOG_TAG, "addTableRow: TableRow added.");
@@ -200,13 +219,33 @@ public class AddGameActivity extends Activity{
             spinnerSpieler.setSelection(spinnerPosition);
         }
 
-        final EditText etRating = new EditText(this);
+
+        final Spinner spinnerRating = new Spinner(this);
+        spinnerRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
+                TableRow.LayoutParams.WRAP_CONTENT));
+        spinnerRating.setGravity(Gravity.CENTER);
+        spinnerRating.setPadding(5, 15, 0, 15);
+
+        List<Integer> ratingList = new ArrayList<Integer>();
+        for(int i = 1; i <= 10; i++){
+            ratingList.add(i);
+        }
+        ArrayAdapter<Integer> dataAdapterRating = new ArrayAdapter<Integer>(this,
+                android.R.layout.simple_spinner_item, ratingList);
+        dataAdapterRating.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerRating.setAdapter(dataAdapterRating);
+        int spinnerPositionRating = dataAdapterRating.getPosition(rating);
+        if( spinnerPositionRating != -1 ) {
+            spinnerRating.setSelection(spinnerPositionRating);
+        }
+
+       /* final EditText etRating = new EditText(this);
         etRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                 TableRow.LayoutParams.WRAP_CONTENT));
         etRating.setGravity(Gravity.LEFT);
         etRating.setPadding(5, 15, 0, 15);
         etRating.setText(String.valueOf(rating));
-        etRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+        etRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);*/
 
         Log.d(LOG_TAG, "addExistingTableRow: TextView and EditText created.");
         final TableRow tr = new TableRow(this);
@@ -219,7 +258,8 @@ public class AddGameActivity extends Activity{
 
         //tr.addView(tvSpieler);
         tr.addView(spinnerSpieler);
-        tr.addView(etRating);
+        //tr.addView(etRating);
+        tr.addView(spinnerRating);
 
         ratingsTable.addView(tr, trParams);
         Log.d(LOG_TAG, "addExistingTableRow: TableRow added.");
@@ -263,6 +303,7 @@ public class AddGameActivity extends Activity{
         if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
             //If we do not putExtra on the cameraIntent, the following code works:
             Bitmap photo = (Bitmap) data.getExtras().get("data");
+            photo = Tools.scaleBitmapToViewSize(photo, 400);
             takePictureButton.setImageBitmap(photo);
             stringOfPicture = Tools.BitMapToString(photo);
 
@@ -370,12 +411,13 @@ public class AddGameActivity extends Activity{
                     View currentView = ratingsTable.getChildAt(i);
                     if (currentView instanceof TableRow) {
                         TableRow row = (TableRow) currentView;
-                        EditText ratingEditText = (EditText) row.getChildAt(1);
-                        String ratingString = ratingEditText.getText().toString();
-                        int rating = Integer.parseInt(ratingString);
 
                         Spinner playerSpinner = (Spinner) row.getChildAt(0);
                         String playerInitials = playerSpinner.getSelectedItem().toString();
+
+                        Spinner ratingSpinner = (Spinner) row.getChildAt(1);
+                        String ratingString =ratingSpinner.getSelectedItem().toString();
+                        int rating = Integer.parseInt(ratingString);
                         if( !playerInitials.equals(emptyString) ) {
                             listOfInitials.add(playerInitials);
                             listOfRatings.add(rating);
@@ -391,8 +433,6 @@ public class AddGameActivity extends Activity{
 
                 intent.putExtras(bundle);
 
-                //intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                //intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 setResult(RESULT_OK, intent);
                 finish();
                 startActivity(intent);

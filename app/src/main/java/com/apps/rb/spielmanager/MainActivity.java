@@ -54,6 +54,11 @@ public class MainActivity extends AppCompatActivity {
 
     private List<Spiel> gameList;
 
+    private Bundle bundle;
+    private Spiel currentGame;
+
+    private Boolean isFiltered;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -78,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         //at the start, fill the ratings in the Spiel-objects
         restoreRatingsInGames();
 
-
+        isFiltered = false;
         _mapTableRowToGameId = new HashMap<TableRow, Long>();
         startLoadData();
     }
@@ -168,7 +173,19 @@ public class MainActivity extends AppCompatActivity {
         new LoadDataTask().execute(0);
     }
 
-    public void loadData() {
+    public void loadGamesWithFilter(int playerNumber) {
+        Log.d(LOG_TAG, "loadGamesWithFilter-Methode gestartet.");
+        gameList = _dataSource.getAllSpieleWithFilter(playerNumber);
+        showGames();
+    }
+
+    public void loadAllGames(){
+        Log.d(LOG_TAG, "loadAllGames-Methode gestartet.");
+        gameList = _dataSource.getAllSpiele();
+        showGames();
+    }
+
+    public void showGames() {
         Log.d(LOG_TAG, "loadData-Methode gestartet.");
         int leftRowMargin=0;
         int topRowMargin=0;
@@ -182,10 +199,8 @@ public class MainActivity extends AppCompatActivity {
 
         _mapTableRowToGameId.clear();
 
-        gameList = _dataSource.getAllSpiele();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
-        DecimalFormat decimalFormat = new DecimalFormat("0.0");
+        /*SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy");
+        DecimalFormat decimalFormat = new DecimalFormat("0.0");*/
 
         int rows = gameList.size(); //  data.length;
         getSupportActionBar().setTitle("Spiele (" + String.valueOf(rows) + ")");
@@ -278,10 +293,6 @@ public class MainActivity extends AppCompatActivity {
             tr.setOnLongClickListener(new View.OnLongClickListener() {
                 public boolean onLongClick(View v) {
                     TableRow tr = (TableRow) v;
-                        /*//Attention: First TextView with id is necessary, dangerous
-                        TextView idTextView = (TextView)tr.getChildAt(0);
-                        String idString = idTextView.getText().toString();
-                        Long id = Long.valueOf(idString);*/
                     Long id = _mapTableRowToGameId.get(tr);
                     Spiel game = _dataSource.getGameById(id);
 
@@ -417,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String result) {
             mProgressBar.hide();
-            loadData();
+            loadAllGames();
         }
 
         @Override
@@ -634,7 +645,83 @@ public class MainActivity extends AppCompatActivity {
             String LOG_TAG = MainActivity.class.getSimpleName();
             Log.d(LOG_TAG, "Kein ShareActionProvider vorhanden!");
         }
+
+
+        MenuItem filterMenuItem = menu.findItem(R.id.action_filter);
+        filterMenuItem.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+            @Override
+            public boolean onMenuItemClick(MenuItem item) {
+                //YourActivity.this.someFunctionInYourActivity();
+                Log.d(LOG_TAG, "Filter-MenuItem clicked...");
+
+                if(isFiltered){
+                    AlertDialog alert = createDeleteFilterGameDialog();
+                    alert.show();
+                } else{
+                    AlertDialog alert = createFilterGameDialog();
+                    alert.show();
+                    //item.setIcon(getResources().getDrawable(R.drawable.ic_filter_deactivate);
+                }
+
+                return true;
+            }
+        });
+
         return true;
+    }
+
+
+    private AlertDialog createFilterGameDialog() {
+        Log.d(LOG_TAG, "started createFilterGameDialog...");
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        final EditText edittext = new EditText(this);
+        alert.setMessage("Wählen Sie die gewünschte Spieleranzahl");
+        alert.setTitle("Filter einrichten");
+
+        alert.setView(edittext);
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String numPlayers = edittext.getText().toString();
+                Log.d(LOG_TAG, "Filtere Spiele für "+ numPlayers + " Spieler.");
+                isFiltered = true;
+                loadGamesWithFilter(Integer.valueOf(numPlayers));
+            }
+        });
+
+        alert.setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // what ever you want to do with No option.
+                isFiltered = false;
+            }
+        });
+
+        return alert.create();
+    }
+
+    private AlertDialog createDeleteFilterGameDialog() {
+        Log.d(LOG_TAG, "started createDeleteFilterGameDialog...");
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        alert.setMessage("Möchten Sie den eingestellten Filter zurücknehmen?");
+        alert.setTitle("Filter löschen");
+
+        alert.setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                isFiltered = false;
+                startLoadData();
+            }
+        });
+
+        alert.setNegativeButton("Nein", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // what ever you want to do with No option.
+                isFiltered = true;
+            }
+        });
+
+        return alert.create();
     }
 
     @Override
@@ -664,54 +751,95 @@ public class MainActivity extends AppCompatActivity {
         _dataSourceSpieler.open();
         _dataSourceRatings.open();
 
-        Bundle bundle = getIntent().getExtras();
+        bundle = getIntent().getExtras();
         if(bundle != null) {
             Log.d(LOG_TAG, "Bundle is not null.");
             int actionId = bundle.getInt("ActionId");
             Log.d(LOG_TAG, "ActionId is " + actionId);
             if( actionId == 1 ) {
                 Log.d(LOG_TAG, "Save-Action will be performed...");
-                Spiel game;
                 long gameId = bundle.getLong("SpielId");
                 if (gameId != -1) {
                     //Existing game was modified
-                    game = _dataSource.getGameById(gameId);
+                    Log.d(LOG_TAG, "Existing game was modified...");
+                    currentGame = _dataSource.getGameById(gameId);
+                    updateGameFromBundle();
                 } else {
                     //New game shall be created
                     String newTitle = bundle.getString("title", "");
-                    game = _dataSource.createSpiel(newTitle);
-                }
 
-                //Set min and max number of players
-                int defaultPlayerNumber = -1;
-                int minPlayers = bundle.getInt("minPlayers", defaultPlayerNumber);
-                if (minPlayers != defaultPlayerNumber) {
-                    game.setMinNumPlayers((minPlayers));
+                    currentGame = _dataSource.getGameByTitle(newTitle);
+                    if( currentGame == null ){
+                        currentGame = _dataSource.createSpiel(newTitle);
+                        updateGameFromBundle();
+                    } else {
+                        Log.d(LOG_TAG, "Spiel" + newTitle + " existiert bereits! AlertDialog...");
+                        // 1. Erzeugen eines AlertDialog.Builder Objekts mit dem Konstruktor
+                        AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                        // 2. Aneinanderreihen mehrerer Setter-Methoden um den Dialog zu bauen
+                        builder.setMessage("Das Spiel " + newTitle + " existiert bereits. Sollen die Eigenschaften des gespeicherten Spiels ergänzt werden?");
+                        //.setTitle(R.string.dialog_title);
+                        // Hinzufügen der Buttons
+                        builder.setPositiveButton(R.string.dialog_button_positive, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Log.d(LOG_TAG, "Eigenschaften des gespeicherten Spiels sollen ergänzt werden...");
+                                dialog.dismiss();
+                                updateGameFromBundle();
+                            }
+                        });
+                        builder.setNegativeButton(R.string.dialog_button_negative, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                Log.d(LOG_TAG, "Eigenschaften des gespeicherten Spiels sollen NICHT ergänzt werden...");
+                                dialog.cancel();
+                                Log.d(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
+                                startLoadData();
+                            }
+                        });
+                        // 3. Erzeugen des AlertDialogs mit der create() Methode
+                        AlertDialog alertDialog = builder.create();
+                        // 4. Anzeigen des AlertDialogs mit der show() Methode
+                        alertDialog.show();
+                    }
                 }
-                int maxPlayers = bundle.getInt("maxPlayers", defaultPlayerNumber);
-                if (maxPlayers != defaultPlayerNumber) {
-                    game.setMaxNumPlayers((maxPlayers));
-                }
-                String coverString = bundle.getString("cover", "");
-                game.setCoverString(coverString);
-
-                //Set all ratings for this game
-                ArrayList<String> initialList = bundle.getStringArrayList("initials");
-                ArrayList<Integer> ratingList = bundle.getIntegerArrayList("ratings");
-                int numRatings = initialList.size();
-                for (int r = 0; r < numRatings; r++) {
-                    String shortName = initialList.get(r);
-                    Spieler player = _dataSourceSpieler.getPlayerByShortName(shortName);
-                    int rating = ratingList.get(r);
-                    game.addRating(player, rating);
-                    _dataSourceRatings.addRating(player.getId(), game.getId(), rating);
-                }
-
-                _dataSource.updateGame(game);
             }
         } else{
             Log.d(LOG_TAG, "onResume: Bundle is null.");
         }
+
+
+    }
+
+    private void updateGameFromBundle(){
+        //Set min and max number of players
+        int defaultPlayerNumber = -1;
+        int minPlayers = bundle.getInt("minPlayers", defaultPlayerNumber);
+        if (minPlayers != defaultPlayerNumber) {
+            currentGame.setMinNumPlayers((minPlayers));
+        }
+        int maxPlayers = bundle.getInt("maxPlayers", defaultPlayerNumber);
+        if (maxPlayers != defaultPlayerNumber) {
+            currentGame.setMaxNumPlayers((maxPlayers));
+        }
+        String coverString = bundle.getString("cover", "");
+        currentGame.setCoverString(coverString);
+
+        //Set all ratings for this game
+        ArrayList<String> initialList = bundle.getStringArrayList("initials");
+        ArrayList<Integer> ratingList = bundle.getIntegerArrayList("ratings");
+        int numRatings = initialList.size();
+        for (int r = 0; r < numRatings; r++) {
+            String shortName = initialList.get(r);
+            Spieler player = _dataSourceSpieler.getPlayerByShortName(shortName);
+            int rating = ratingList.get(r);
+            currentGame.addRating(player, rating);
+            _dataSourceRatings.addRating(player.getId(), currentGame.getId(), rating);
+        }
+
+        _dataSource.updateGame(currentGame);
+        currentGame = null;
+        //clear intent so that no game is added twice when the app is put in background and reopened
+        Intent intent = new Intent();
+        setIntent(intent);
 
         Log.d(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
         startLoadData();

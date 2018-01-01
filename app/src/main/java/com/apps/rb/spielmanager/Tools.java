@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.util.Base64;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.util.NoSuchElementException;
@@ -13,6 +14,7 @@ import java.util.NoSuchElementException;
  */
 
 public class Tools {
+    private static final String LOG_TAG = Tools.class.getSimpleName();
 
     public static String BitMapToString(Bitmap bitmap) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -42,6 +44,7 @@ public class Tools {
         try {
             int width = bm.getWidth();
             int height = bm.getHeight();
+            Log.d(LOG_TAG, "Bitmap had width " + width +  " and height " + height);
 
             float xScale = ((float) boundingValue) / width;
             float yScale = ((float) boundingValue) / height;

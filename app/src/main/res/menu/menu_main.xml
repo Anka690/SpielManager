@@ -12,4 +12,9 @@
         android:title="@string/action_teile_spieldaten"
         app:showAsAction="always"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider" />
+
+    <item android:id="@+id/action_filter"
+        android:title="@string/action_filter"
+        android:icon="@drawable/ic_filter"
+        app:showAsAction="always" />
 </menu>

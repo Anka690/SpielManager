@@ -193,6 +193,24 @@ public class Datenbank {
         return getGameById(id);
     }
 
+    public Spiel getGameByTitle(String title){
+        Log.d(LOG_TAG, "getGameByTitle: gestartet mit title = " + title + " ...");
+
+        String whereClause = DatenbankHelper.COLUMN_TITLE + " = ?" ;
+        String[] whereArgs = new String[] { title };
+
+        Cursor cursor = database.query(DatenbankHelper.TABLE_SPIELE,
+                columns, whereClause, whereArgs, null, null, null);
+
+        if (cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            return cursorToSpiel(cursor);
+        } else{
+            Log.d(LOG_TAG, "getGameByTitle: no entry found");
+            return null;
+        }
+    }
+
     public List<Spiel> getAllSpiele() {
         Log.d(LOG_TAG, "getAllSpiele: gestartet...");
         List<Spiel> gameList = new ArrayList<>();
@@ -213,6 +231,35 @@ public class Datenbank {
             }
         } else{
             Log.d(LOG_TAG, "getAllSpiele: no games found");
+        }
+        cursor.close();
+
+        return gameList;
+    }
+
+    public List<Spiel> getAllSpieleWithFilter(int playerNumber) {
+        Log.d(LOG_TAG, "getAllSpieleWithFilter: gestartet...");
+        List<Spiel> gameList = new ArrayList<>();
+
+        String whereClause = DatenbankHelper.COLUMN_MIN_NUM_PLAYERS + " <= ? AND " + DatenbankHelper.COLUMN_MAX_NUM_PLAYERS + ">= ?";
+        String[] whereArgs = new String[] {String.valueOf(playerNumber), String.valueOf(playerNumber) };
+
+        Cursor cursor = database.query(DatenbankHelper.TABLE_SPIELE,
+                columns, whereClause, whereArgs, null, null, null);
+
+        if( cursor.moveToFirst()) {
+            Spiel game;
+            while (!cursor.isAfterLast()) {
+                game = cursorToSpiel(cursor);
+                if (game == null) {
+                    Log.d(LOG_TAG, "getAllSpieleWithFilter: game is null");
+                }
+                gameList.add(game);
+                Log.d(LOG_TAG, "ID: " + game.getId() + ", Inhalt: " + game.toString());
+                cursor.moveToNext();
+            }
+        } else{
+            Log.d(LOG_TAG, "getAllSpieleWithFilter: no games found");
         }
         cursor.close();
 

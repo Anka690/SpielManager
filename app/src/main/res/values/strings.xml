@@ -22,6 +22,7 @@
     <string name="action_change">Eintrag ändern</string>
     <string name="cab_checked_string">ausgewählt</string>
     <string name="action_teile_spieldaten">Share</string>
+    <string name="action_filter">Filter</string>
 
     <string name="dialog_change_game">Listeneintrag ändern</string>
 
