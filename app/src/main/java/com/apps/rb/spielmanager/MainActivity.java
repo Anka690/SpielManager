@@ -736,9 +736,46 @@ public class MainActivity extends AppCompatActivity {
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
+        } else if( id == R.id.action_reset){
+            AlertDialog alert = createResetGamesDialog();
+            alert.show();
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    private AlertDialog createResetGamesDialog() {
+        Log.d(LOG_TAG, "started createResetGamesDialog...");
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+        final EditText edittext = new EditText(this);
+        alert.setMessage("Geben Sie das Passwort zum Löschen aller Spiele ein!");
+        alert.setTitle("Spieledatenbank zurücksetzen");
+
+        alert.setView(edittext);
+
+        alert.setPositiveButton("Alle Spiele löschen", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                String password = edittext.getText().toString();
+                Log.d(LOG_TAG, "Eingegebenes Passwort: " + password);
+                if( password.equals("SM_Delete")){
+                    _dataSource.reset();
+                    _dataSourceRatings.reset();
+                    startLoadData();
+                } else{
+                    Log.d(LOG_TAG, "Passwort ist falsch.");
+                }
+            }
+        });
+
+        alert.setNegativeButton("Abbrechen", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int whichButton) {
+                // what ever you want to do with No option.
+            }
+        });
+
+        return alert.create();
     }
 
     @Override

@@ -106,4 +106,9 @@ public class DatenbankRatings {
         return new Pair<Long, Integer>(spielerId, rating);
     }
 
+    public void reset(){
+        Log.d(LOG_TAG, "reset der Ratingsdatenbank gestartet...");
+        databaseRatings.delete(DatenbankRatingsHelper.TABLE_RATINGS, null, null);
+    }
+
 }

@@ -8,6 +8,12 @@
         android:title="@string/action_settings"
         app:showAsAction="never" />
 
+    <item
+        android:id="@+id/action_reset"
+        android:orderInCategory="200"
+        android:title="Reset"
+        app:showAsAction="never" />
+
     <item android:id="@+id/action_teile_spieldaten"
         android:title="@string/action_teile_spieldaten"
         app:showAsAction="always"

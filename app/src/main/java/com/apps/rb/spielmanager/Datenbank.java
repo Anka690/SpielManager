@@ -265,4 +265,9 @@ public class Datenbank {
 
         return gameList;
     }
+
+    public void reset(){
+        Log.d(LOG_TAG, "reset der Spieledatenbank gestartet...");
+        database.delete(DatenbankHelper.TABLE_SPIELE, null, null);
+    }
 }
