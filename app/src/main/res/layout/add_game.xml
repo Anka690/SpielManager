@@ -26,10 +26,17 @@
 
         <EditText
             android:id="@+id/editText_newGame_title"
-            android:layout_width="wrap_content"
+            android:layout_width="188dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:hint="@string/editText_hint_title" />
+
+        <Button
+            android:id="@+id/button_infoFromInternet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Web" />
     </LinearLayout>
 
     <LinearLayout
@@ -144,7 +151,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="start"
             android:layout_weight="1"
-            android:text="Cancel"
+            android:text="Abbbrechen"
             android:textSize="16sp" />
 
         <Button
@@ -153,7 +160,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="end"
             android:layout_weight="1"
-            android:text="Save"
+            android:text="Speichern"
             android:textSize="16sp" />
     </LinearLayout>
 
