@@ -51,7 +51,7 @@ public class DatenbankSpieler {
         fillMapOfPlayers();
 
         Spieler player;
-        if( getPlayerByShortName("AR") == null) {
+        /*if( getPlayerByShortName("AR") == null) {
             player = createSpieler("AR", "Anka", "Rothenbächer");
             Log.d(LOG_TAG, "Folgender Spieler wurde kreiert: " + player.toString());
         }
@@ -75,7 +75,7 @@ public class DatenbankSpieler {
         }
         if( getPlayerByShortName("CS") == null) {
             createSpieler("CS", "Cass", "Serna");
-        }
+        }*/
         close();
     }
 
@@ -181,19 +181,71 @@ public class DatenbankSpieler {
         }
     }
 
-    public List<Spieler> getAllSpieler() {
-        Log.d(LOG_TAG, "getAllSpieler: gestartet...");
+    public void updatePlayer(Spieler player) {
+        Log.d(LOG_TAG, "updatePlayer: gestartet...");
+        ContentValues values = new ContentValues();
+        for (String column: stringColumns) {
+            values.put(column, player.getStringValue(column));
+        }
+        doInternPlayerUpdate(player.getId(), values);
+    }
+
+    public Spieler doInternPlayerUpdate(long id, ContentValues values){
+        Log.d(LOG_TAG, "doInternPlayerUpdate: gestartet...");
+        databaseSpieler.update(DatenbankSpielerHelper.TABLE_SPIELER,
+                values,
+                DatenbankSpielerHelper.COLUMN_SPIELER_ID + "=" + id,
+                null);
+
+        return getPlayerById(id);
+    }
+
+    public List<Spieler> getAllPlayers() {
+        Log.d(LOG_TAG, "getAllPlayers: gestartet...");
         List<Spieler> playerList = new ArrayList<>();
 
         Cursor cursor = databaseSpieler.query(DatenbankSpielerHelper.TABLE_SPIELER,
                 columns, null, null, null, null, null);
+
+        if (cursor == null) {
+            Log.d(LOG_TAG, "No players found!");
+            return playerList;
+        }
 
         cursor.moveToFirst();
         Spieler player;
         while(!cursor.isAfterLast()) {
             player = cursorToSpieler(cursor);
             if( player == null ){
-                Log.d(LOG_TAG, "getAllSpieler: player is null");
+                Log.d(LOG_TAG, "getAllPlayers: player is null");
+            }
+            playerList.add(player);
+            Log.d(LOG_TAG, "Spieler-ID: " + player.getId() + ", Inhalt: " + player.getShortName());
+            cursor.moveToNext();
+        }
+        cursor.close();
+
+        return playerList;
+    }
+
+    public List<Spieler> getAllPlayersSorted(String sortingColumn, Boolean descending) {
+        Log.d(LOG_TAG, "getAllPlayers: gestartet...");
+        List<Spieler> playerList = new ArrayList<>();
+
+        String orderDirection = " ASC";
+        if( descending ){
+            orderDirection = " DESC";
+        }
+
+        Cursor cursor = databaseSpieler.query(DatenbankSpielerHelper.TABLE_SPIELER,
+                columns, null, null, null, null, sortingColumn + orderDirection);
+
+        cursor.moveToFirst();
+        Spieler player;
+        while(!cursor.isAfterLast()) {
+            player = cursorToSpieler(cursor);
+            if( player == null ){
+                Log.d(LOG_TAG, "getAllPlayers: player is null");
             }
             playerList.add(player);
             Log.d(LOG_TAG, "Spieler-ID: " + player.getId() + ", Inhalt: " + player.getShortName());

@@ -4,17 +4,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.BitmapFactory;
 import android.graphics.Bitmap;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.content.FileProvider;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -27,19 +22,10 @@ import android.widget.TableRow;
 import android.text.TextUtils;
 import android.widget.Toast;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -47,10 +33,6 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * Created by Anka on 06.12.2017.
@@ -136,7 +118,9 @@ public class AddGameActivity extends Activity {
 
                 stringOfPicture = game.getCoverString();
                 if (!stringOfPicture.equals(emptyString)) {
-                    takePictureButton.setImageBitmap(Tools.StringToBitMap(game.getCoverString()));
+                    Bitmap photo = Tools.StringToBitMap(game.getCoverString());
+                    photo = Tools.scaleBitmapToViewSize(photo, 400);
+                    takePictureButton.setImageBitmap(photo);
                 }
 
                 loadRatings(game);
@@ -172,7 +156,7 @@ public class AddGameActivity extends Activity {
 
         List<String> list = new ArrayList<String>();
         _dataSourceSpieler.open();
-        List<Spieler> players = _dataSourceSpieler.getAllSpieler();
+        List<Spieler> players = _dataSourceSpieler.getAllPlayers();
         for (Spieler player : players) {
             list.add(player.getShortName());
         }
@@ -182,7 +166,6 @@ public class AddGameActivity extends Activity {
                 android.R.layout.simple_spinner_item, list);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerSpieler.setAdapter(dataAdapter);
-
 
         final Spinner spinnerRating = new Spinner(this);
         spinnerRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
@@ -199,20 +182,9 @@ public class AddGameActivity extends Activity {
         dataAdapterRating.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinnerRating.setAdapter(dataAdapterRating);
 
-
-       /* final EditText etRating = new EditText(this);
-        etRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
-                TableRow.LayoutParams.WRAP_CONTENT));
-        etRating.setGravity(Gravity.LEFT);
-        etRating.setPadding(5, 15, 0, 15);
-
-        etRating.setText( getResources().getString(R.string.rating_default) ); //"10");
-        etRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);*/
-
         Log.d(LOG_TAG, "addTableRow: both spinners created.");
 
         final TableRow tr = new TableRow(this);
-        //tr.setId(i + 1);
         TableLayout.LayoutParams trParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
                 TableLayout.LayoutParams.WRAP_CONTENT);
         trParams.setMargins(0, 0, 0, 0);
@@ -220,7 +192,6 @@ public class AddGameActivity extends Activity {
         tr.setLayoutParams(trParams);
 
         tr.addView(spinnerSpieler);
-        //tr.addView(etRating);
         tr.addView(spinnerRating);
 
         ratingsTable.addView(tr, trParams);
@@ -229,8 +200,6 @@ public class AddGameActivity extends Activity {
 
     private void addExistingTableRow(long spielerId, int rating) {
         Log.d(LOG_TAG, "addExistingTableRow: gestartet...");
-
-        int smallTextSize = (int) getResources().getDimension(R.dimen.font_size_small);
 
         final Spinner spinnerSpieler = new Spinner(this);
         //spinnerSpieler.setId()
@@ -242,7 +211,7 @@ public class AddGameActivity extends Activity {
         _dataSourceSpieler.open();
         Spieler playerOfRating = _dataSourceSpieler.getPlayerById(spielerId);
         List<String> list = new ArrayList<String>();
-        List<Spieler> players = _dataSourceSpieler.getAllSpieler();
+        List<Spieler> players = _dataSourceSpieler.getAllPlayers();
         for (Spieler p : players) {
             list.add(p.getShortName());
         }
@@ -255,7 +224,6 @@ public class AddGameActivity extends Activity {
         if (spinnerPosition != -1) {
             spinnerSpieler.setSelection(spinnerPosition);
         }
-
 
         final Spinner spinnerRating = new Spinner(this);
         spinnerRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
@@ -276,15 +244,6 @@ public class AddGameActivity extends Activity {
             spinnerRating.setSelection(spinnerPositionRating);
         }
 
-       /* final EditText etRating = new EditText(this);
-        etRating.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
-                TableRow.LayoutParams.WRAP_CONTENT));
-        etRating.setGravity(Gravity.LEFT);
-        etRating.setPadding(5, 15, 0, 15);
-        etRating.setText(String.valueOf(rating));
-        etRating.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);*/
-
-        Log.d(LOG_TAG, "addExistingTableRow: TextView and EditText created.");
         final TableRow tr = new TableRow(this);
         //tr.setId(i + 1);
         TableLayout.LayoutParams trParams = new TableLayout.LayoutParams(TableLayout.LayoutParams.MATCH_PARENT,
@@ -293,9 +252,7 @@ public class AddGameActivity extends Activity {
         tr.setPadding(0, 0, 0, 0);
         tr.setLayoutParams(trParams);
 
-        //tr.addView(tvSpieler);
         tr.addView(spinnerSpieler);
-        //tr.addView(etRating);
         tr.addView(spinnerRating);
 
         ratingsTable.addView(tr, trParams);
@@ -353,10 +310,13 @@ public class AddGameActivity extends Activity {
         if (requestCode == CAMERA_REQUEST && resultCode == Activity.RESULT_OK) {
             //If we do not putExtra on the cameraIntent, the following code works:
             Bitmap photo = (Bitmap) data.getExtras().get("data");
-            photo = Tools.scaleBitmapToViewSize(photo, 400);
-            takePictureButton.setImageBitmap(photo);
+            Log.d(LOG_TAG, "Size of original picture: strLength =" + Tools.BitMapToString(photo).length() + ", w: " + photo.getWidth() + ", h: " +photo.getHeight() );
             stringOfPicture = Tools.BitMapToString(photo);
             Log.d(LOG_TAG, "Length of picture string: " + stringOfPicture.length());
+
+            photo = Tools.scaleBitmapToViewSize(photo, 400);
+            Log.d(LOG_TAG, "Length of picture as string after scaling: " + Tools.BitMapToString(photo).length() + "w: " + photo.getWidth() + ", h: " +photo.getHeight() );
+            takePictureButton.setImageBitmap(photo);
 /*            //coolere Alternative with path
             Bitmap testPhoto = BitmapFactory.decodeFile(resultingFile.getPath());
             testPhoto = Tools.scaleBitmapToViewSize(testPhoto, dpToPx(200));
@@ -635,7 +595,6 @@ public class AddGameActivity extends Activity {
                             String minPlayers = gameInfoString.substring(gameInfoString.indexOf(">") + 1, gameInfoString.lastIndexOf("<"));
                             Log.d(LOG_TAG, "GameInfo minplayers = " + minPlayers);
                             if( editTextMinPlayers != null) {
-                                //TODO: Hierein kommt man nicht :( Herausfinden, warum!
                                 editTextMinPlayers.setText(minPlayers);
                             }
                         } else if ( gameInfoString.contains("maxplayers")){
@@ -647,9 +606,12 @@ public class AddGameActivity extends Activity {
                         }
                     }
                 }
+                Toast.makeText(AddGameActivity.this, "Spieldaten online verifiziert.",
+                        Toast.LENGTH_SHORT).show();
+            } else{
+                Toast.makeText(AddGameActivity.this, "Spiel online nicht gefunden.",
+                        Toast.LENGTH_SHORT).show();
             }
-            Toast.makeText(AddGameActivity.this, "Spieleranzahlen verifiziert.",
-                    Toast.LENGTH_SHORT).show();
         }
 
         /*private String[] readXmlDataGame(String xmlString) {

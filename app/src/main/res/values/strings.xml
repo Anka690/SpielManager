@@ -1,6 +1,8 @@
 <resources>
     <string name="app_name">SpielManager</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_settings">Einstellungen</string>
+    <string name="action_manage_players">Spielerverwaltung</string>
+    <string name="action_reset">Reset</string>
 
     <string name="title">Titel</string>
     <string name="spieleranzahl">Spieleranzahl</string>
@@ -14,7 +16,16 @@
     <string name="editText_new_minSpieler">Neue Mindestanzahl</string>
     <string name="editText_new_maxSpieler">Neue Maximalanzahl</string>
 
+    <string name="firstname">Vorname</string>
+    <string name="lastname">Nachname</string>
+    <string name="shortname">Abkürzung</string>
+
+    <string name="editText_firstname">Dein Vorname</string>
+    <string name="editText_lastname">Dein Nachname</string>
+    <string name="editText_shortname">Deine Abkürzung</string>
+
     <string name="button_add_game">+</string>
+    <string name="button_add_player">+</string>
 
     <string name="editText_errorMessage">Das Feld darf nicht leer sein.</string>
 

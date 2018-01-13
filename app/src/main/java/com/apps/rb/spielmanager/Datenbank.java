@@ -237,6 +237,36 @@ public class Datenbank {
         return gameList;
     }
 
+    public List<Spiel> getAllSpieleSorted(String sortingColumn, Boolean descending) {
+        Log.d(LOG_TAG, "getAllSpieleSorted: gestartet...");
+        List<Spiel> gameList = new ArrayList<>();
+
+        String orderDirection = " ASC";
+        if( descending ){
+            orderDirection = " DESC";
+        }
+        Cursor cursor = database.query(DatenbankHelper.TABLE_SPIELE,
+                columns, null, null,  null, null, sortingColumn + orderDirection);
+
+        if( cursor.moveToFirst()) {
+            Spiel game;
+            while (!cursor.isAfterLast()) {
+                game = cursorToSpiel(cursor);
+                if (game == null) {
+                    Log.d(LOG_TAG, "getAllSpiele: game is null");
+                }
+                gameList.add(game);
+                Log.d(LOG_TAG, "ID: " + game.getId() + ", Inhalt: " + game.toString());
+                cursor.moveToNext();
+            }
+        } else{
+            Log.d(LOG_TAG, "getAllSpiele: no games found");
+        }
+        cursor.close();
+
+        return gameList;
+    }
+
     public List<Spiel> getAllSpieleWithFilter(int playerNumber) {
         Log.d(LOG_TAG, "getAllSpieleWithFilter: gestartet...");
         List<Spiel> gameList = new ArrayList<>();

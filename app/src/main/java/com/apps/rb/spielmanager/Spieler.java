@@ -41,6 +41,29 @@ public class Spieler {
         return _lastname;
     }
 
+    public void setShortname(String shortname){
+        _shortName = shortname;
+    }
+
+    public void setFirstname(String firstname) { _firstname = firstname; }
+
+    public void setLastname(String lastname) {
+        _lastname = lastname;
+    }
+
+    public String getStringValue(String column){
+        switch (column){
+            case DatenbankSpielerHelper.COLUMN_SPIELER_FIRSTNAME:
+                return get_firstname();
+            case DatenbankSpielerHelper.COLUMN_SPIELER_SURNAME:
+                return get_lastname();
+            case DatenbankSpielerHelper.COLUMN_SPIELER_SHORT_NAME:
+                return getShortName();
+            default:
+                return "";
+        }
+    }
+
     @Override
     public String toString() {
         return "Spieler " + get_firstname() + " " + get_lastname() +

@@ -29,13 +29,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 
 //TODO: Cover-Foto speichern und anzeigen
-//TODO: Filter-Möglichkeit hinzufügen
-//TODO: Spieler hinzufügbar machen
+//TODO: Filter-Möglichkeiten hinzufügen
 //TODO: Layouts schön machen
 
 public class MainActivity extends AppCompatActivity {
@@ -58,6 +54,11 @@ public class MainActivity extends AppCompatActivity {
     private Spiel currentGame;
 
     private Boolean isFiltered;
+
+    private Boolean isTitleSortedDescending = false;
+    private Boolean isMinPlayersSortedDescending = false;
+    private Boolean isMaxPlayersSortedDescending = false;
+    private Boolean isRatingSortedDescending = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,10 +110,6 @@ public class MainActivity extends AppCompatActivity {
         add.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
                 Intent myIntent = new Intent(view.getContext(), AddGameActivity.class);
-                /*Bundle bundle = new Bundle();
-                bundle.putString ("title", titleString);
-                myIntent.putExtras(bundle);*/
-
                 startActivityForResult(myIntent, ADD_GAME_ACTIVITY_RESULT_CODE);
             }
         });
@@ -123,47 +120,7 @@ public class MainActivity extends AppCompatActivity {
         super.onNewIntent(intent);
         Log.d(LOG_TAG, "onNewIntent: gestartet...");
         setIntent(intent);
-        //now getIntent() should always return the last received intent
     }
-
-   /* @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Log.d(LOG_TAG, "onActivityResult: gestartet...");
-        // check that it is the SecondActivity with an OK result
-        if (requestCode == ADD_GAME_ACTIVITY_RESULT_CODE) {
-            if (resultCode == RESULT_OK) {
-
-                Log.d(LOG_TAG, "Die Datenquelle wird geöffnet.");
-                _dataSource.open();
-
-                Bundle bundle = getIntent().getExtras();
-                if(bundle != null) {
-                    Log.d(LOG_TAG, "onActivityResult: Bundle is not null.");
-                    String newTitle = bundle.getString("title");
-                    Spiel game = _dataSource.createSpiel(newTitle);
-                    int defaultPlayerNumber = -1;
-                    int minPlayers = bundle.getInt("minPlayers", defaultPlayerNumber);
-                    if (minPlayers != defaultPlayerNumber) {
-                        game.setMinNumPlayers((minPlayers));
-                        //_dataSource.updateGame(game.getId(), DatenbankHelper.COLUMN_MIN_NUM_PLAYERS, minPlayers );
-                    }
-                    int maxPlayers = bundle.getInt("maxPlayers", defaultPlayerNumber);
-                    if (maxPlayers != defaultPlayerNumber) {
-                        game.setMaxNumPlayers((maxPlayers));
-                        //_dataSource.updateGame(game.getId(), DatenbankHelper.COLUMN_MAX_NUM_PLAYERS, maxPlayers );
-                    }
-                    _dataSource.updateGame(game);
-                } else{
-                    Log.d(LOG_TAG, "onActivityResult: Attention: Bundle is null.");
-                }
-
-                Log.d(LOG_TAG, "Folgende Einträge sind in der Datenbank vorhanden:");
-                startLoadData();
-            }
-        }
-    }*/
-
 
     public void startLoadData() {
         mProgressBar.setCancelable(false);
@@ -182,6 +139,12 @@ public class MainActivity extends AppCompatActivity {
     public void loadAllGames(){
         Log.d(LOG_TAG, "loadAllGames-Methode gestartet.");
         gameList = _dataSource.getAllSpiele();
+        showGames();
+    }
+
+    public void loadAllGamesSorted(String sortingColumn, Boolean descending){
+        Log.d(LOG_TAG, "loadAllGames-Methode gestartet.");
+        gameList = _dataSource.getAllSpieleSorted(sortingColumn, descending);
         showGames();
     }
 
@@ -215,15 +178,6 @@ public class MainActivity extends AppCompatActivity {
             Spiel row = gameList.get(i);
             Log.d(LOG_TAG, "Spiel " + String.valueOf(row.getId()) + " mit Titel " + row.getTitle());
 
-/*            final TextView tv = new TextView(this);
-            tv.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
-                    TableRow.LayoutParams.WRAP_CONTENT));
-            tv.setGravity(Gravity.LEFT);
-            tv.setPadding(5, 15, 0, 15);
-            tv.setBackgroundColor(Color.parseColor("#f8f8f8"));
-            tv.setText(String.valueOf(row.getId()));
-            tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);*/
-
             final TextView tv2 = new TextView(this);
             tv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                         TableRow.LayoutParams.MATCH_PARENT));
@@ -233,13 +187,11 @@ public class MainActivity extends AppCompatActivity {
             tv2.setBackgroundColor(Color.parseColor("#ffffff"));
             tv2.setTextColor(Color.parseColor("#000000"));
             tv2.setText(row.getTitle());
-                //tv2.setText(dateFormat.format(row.getTitle()));
 
             final ImageView iv2 = new ImageView(this);
             iv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
                         TableRow.LayoutParams.MATCH_PARENT));
             iv2.setPadding(5, 15, 0, 15);
-            //iv2.setBackgroundColor(Color.parseColor("#ffffff"));
             String coverString = row.getCoverString();
             if( !coverString.equals("")) {
                 iv2.setImageBitmap(Tools.StringToBitMap(row.getCoverString()));
@@ -333,15 +285,6 @@ public class MainActivity extends AppCompatActivity {
     private void createHeaders(){
         int smallTextSize = (int) getResources().getDimension(R.dimen.font_size_small);
 
-        /*final TextView tv = new TextView(this);
-        tv.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
-                TableRow.LayoutParams.WRAP_CONTENT));
-        tv.setGravity(Gravity.LEFT);
-        tv.setPadding(5, 15, 0, 15);
-        tv.setText("Id");
-        tv.setBackgroundColor(Color.parseColor("#f0f0f0"));
-        tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);*/
-
         final TextView tv2 = new TextView(this);
         tv2.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
                     TableRow.LayoutParams.WRAP_CONTENT));
@@ -350,6 +293,12 @@ public class MainActivity extends AppCompatActivity {
         tv2.setText("Name");
         tv2.setBackgroundColor(Color.parseColor("#f7f7f7"));
         tv2.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+        tv2.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                isTitleSortedDescending = !isTitleSortedDescending;
+                loadAllGamesSorted(DatenbankHelper.COLUMN_TITLE, isTitleSortedDescending);
+            }
+        });
 
         final TextView tvCover = new TextView(this);
         tvCover.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT,
@@ -368,6 +317,12 @@ public class MainActivity extends AppCompatActivity {
         tv3.setText("Min");
         tv3.setBackgroundColor(Color.parseColor("#f0f0f0"));
         tv3.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+        tv3.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                isMinPlayersSortedDescending = !isMinPlayersSortedDescending;
+                loadAllGamesSorted(DatenbankHelper.COLUMN_MIN_NUM_PLAYERS, isMinPlayersSortedDescending);
+            }
+        });
 
         final TextView tv4 = new TextView(this);
         tv4.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
@@ -377,6 +332,12 @@ public class MainActivity extends AppCompatActivity {
         tv4.setText("Max");
         tv4.setBackgroundColor(Color.parseColor("#f0f0f0"));
         tv4.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+        tv4.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                isMaxPlayersSortedDescending = !isMaxPlayersSortedDescending;
+                loadAllGamesSorted(DatenbankHelper.COLUMN_MAX_NUM_PLAYERS, isMaxPlayersSortedDescending);
+            }
+        });
 
         final TextView tv5 = new TextView(this);
         tv5.setLayoutParams(new TableRow.LayoutParams(TableRow.LayoutParams.WRAP_CONTENT,
@@ -386,6 +347,12 @@ public class MainActivity extends AppCompatActivity {
         tv5.setText("Rating");
         tv5.setBackgroundColor(Color.parseColor("#f0f0f0"));
         tv5.setTextSize(TypedValue.COMPLEX_UNIT_PX, smallTextSize);
+        tv5.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) {
+                isRatingSortedDescending = !isRatingSortedDescending;
+                loadAllGamesSorted(DatenbankHelper.COLUMN_AVG_RATING, isRatingSortedDescending);
+            }
+        });
 
         // add table row
         int leftRowMargin=0;
@@ -480,13 +447,7 @@ public class MainActivity extends AppCompatActivity {
                         // An dieser Stelle schreiben wir die geänderten Daten in die SQLite Datenbank
                         _dataSource.updateGame(game);
 
-                        //Spiel updatedGame = _dataSource.updateGame(game.getId(), titleString);
-
-/*                        Log.d(LOG_TAG, "Alter Eintrag - ID: " + game.getId() + " Inhalt: " + game.toString());
-                        Log.d(LOG_TAG, "Neuer Eintrag - ID: " + updatedGame.getId() + " Inhalt: " + updatedGame.toString());*/
-
                         startLoadData();
-                        //showAllListEntries();
                         dialog.dismiss();
                     }
                 })
@@ -739,6 +700,9 @@ public class MainActivity extends AppCompatActivity {
         } else if( id == R.id.action_reset){
             AlertDialog alert = createResetGamesDialog();
             alert.show();
+        } else if( id == R.id.action_manage_players){
+            Intent myIntent = new Intent(MainActivity.this, PlayerManagementActivity.class);
+            startActivity(myIntent);
         }
 
         return super.onOptionsItemSelected(item);
@@ -842,8 +806,6 @@ public class MainActivity extends AppCompatActivity {
         } else{
             Log.d(LOG_TAG, "onResume: Bundle is null.");
         }
-
-
     }
 
     private void updateGameFromBundle(){

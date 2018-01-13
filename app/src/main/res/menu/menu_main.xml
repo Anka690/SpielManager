@@ -9,18 +9,26 @@
         app:showAsAction="never" />
 
     <item
-        android:id="@+id/action_reset"
+        android:id="@+id/action_manage_players"
         android:orderInCategory="200"
-        android:title="Reset"
+        android:title="@string/action_manage_players"
         app:showAsAction="never" />
+
+    <item
+        android:id="@+id/action_reset"
+        android:orderInCategory="300"
+        android:title="@string/action_reset"
+        app:showAsAction="never" />
+
+
 
     <item android:id="@+id/action_teile_spieldaten"
         android:title="@string/action_teile_spieldaten"
-        app:showAsAction="always"
+        app:showAsAction="ifRoom"
         app:actionProviderClass="android.support.v7.widget.ShareActionProvider" />
 
     <item android:id="@+id/action_filter"
         android:title="@string/action_filter"
         android:icon="@drawable/ic_filter"
-        app:showAsAction="always" />
+        app:showAsAction="ifRoom" />
 </menu>
